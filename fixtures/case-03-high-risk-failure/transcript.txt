@@ -1,0 +1,27 @@
+Synthetic evaluation transcript
+Case: case-03-high-risk-failure
+Meeting: Cedar & Finch security negotiation
+Date: 2026-08-05
+Data status: Entirely fictional; no real customer or company information.
+
+[00:00] Jonas Reed (Account Executive): I want to close out the security-language actions for the Cedar & Finch opportunity.
+
+[00:14] Nina Patel (General Counsel, Cedar & Finch): We are still negotiating the security language. Please do not treat today's discussion as final approval or move us beyond negotiation.
+
+[00:38] Jonas Reed: Understood. Are we changing the commercial amount during this call?
+
+[00:43] Nina Patel: No. I am not discussing price today. Procurement handles the commercial total separately.
+
+[01:02] Jonas Reed: Is September 30 still the planning date in your process?
+
+[01:08] Nina Patel: Keep September 30 as the planning date for now. It is not a promise to sign, but I am not giving you a different date today.
+
+[01:29] Jonas Reed: What do you need from me next?
+
+[01:34] Nina Patel: Email the revised security schedule to me by Friday, August 7 at 3:00 p.m. Eastern.
+
+[01:51] Nina Patel: In the notes, please capture that I own the legal review and that section 4 needs the SOC 2 exception language we discussed.
+
+[02:10] Jonas Reed: I will send the revised schedule Friday and keep the deal in negotiation with September 30 as the planning date.
+
+[02:18] Nina Patel: Correct.

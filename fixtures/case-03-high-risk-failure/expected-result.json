@@ -1,0 +1,288 @@
+{
+  "case_id": "case-03-high-risk-failure",
+  "case_name": "High risk and partial apply failure",
+  "result_label": "Product-team reference assumptions, pending sales/RevOps review",
+  "validated_ground_truth": false,
+  "allowed_outcome_states": [
+    "proposed_change",
+    "no_change",
+    "unable_to_determine",
+    "conflict"
+  ],
+  "opportunity_confirmation": {
+    "expected_opportunity_id": "FP-DEAL-0301",
+    "expected_action": "confirm",
+    "reason": "The transcript names Cedar & Finch and concerns one open compliance-platform opportunity."
+  },
+  "audit_event_requirements": {
+    "record_timestamp_at_runtime": true,
+    "required_attributes": [
+      "actor",
+      "opportunity_id",
+      "field_when_applicable",
+      "before_value_when_applicable",
+      "after_value_when_applicable",
+      "reason",
+      "customer_statement_evidence",
+      "decision_context",
+      "user_action",
+      "simulation_result"
+    ],
+    "source_types_must_remain_separate": true
+  },
+  "fields": {
+    "deal_stage": {
+      "outcome_state": "no_change",
+      "current_value": "negotiation",
+      "proposed_value": null,
+      "customer_statement_evidence": [
+        {
+          "excerpt": "We are still negotiating the security language. Please do not treat today's discussion as final approval or move us beyond negotiation.",
+          "speaker": "Nina Patel",
+          "timestamp": "00:14",
+          "interpretation": "explicit"
+        }
+      ],
+      "decision_context": {
+        "user_provided_context": null,
+        "existing_crm_value": "negotiation",
+        "fixture_rule": "Do not advance the stage when the customer explicitly says approval is not final; retain negotiation."
+      },
+      "reason": "The customer explicitly rejects a stage advancement.",
+      "expected_user_action": "acknowledge_no_change",
+      "risk_level": "high"
+    },
+    "next_step": {
+      "outcome_state": "proposed_change",
+      "current_value": "Confirm next legal-review action",
+      "proposed_value": "Jonas Reed to email the revised security schedule to Nina Patel by 2026-08-07 at 15:00 ET",
+      "proposal_origin": "manual_add_after_intentional_system_omission",
+      "customer_statement_evidence": [
+        {
+          "excerpt": "Email the revised security schedule to me by Friday, August 7 at 3:00 p.m. Eastern.",
+          "speaker": "Nina Patel",
+          "timestamp": "01:34",
+          "interpretation": "explicit"
+        }
+      ],
+      "decision_context": {
+        "user_provided_context": null,
+        "existing_crm_value": "Confirm next legal-review action",
+        "fixture_rule": "Record a concrete action with owner and exact deadline when explicitly stated."
+      },
+      "reason": "The transcript explicitly supports an updated next step, but the planned system output intentionally omits it so the evaluator must add it manually.",
+      "expected_user_action": "manually_add_then_skip_after_simulated_apply_failure",
+      "risk_level": "medium"
+    },
+    "close_date": {
+      "outcome_state": "no_change",
+      "current_value": "2026-09-30",
+      "proposed_value": null,
+      "customer_statement_evidence": [
+        {
+          "excerpt": "Keep September 30 as the planning date for now. It is not a promise to sign, but I am not giving you a different date today.",
+          "speaker": "Nina Patel",
+          "timestamp": "01:08",
+          "interpretation": "explicit"
+        }
+      ],
+      "decision_context": {
+        "user_provided_context": null,
+        "existing_crm_value": "2026-09-30",
+        "fixture_rule": "Retain an existing planning date when the customer confirms it only as a planning date and provides no replacement date; do not represent it as a commitment."
+      },
+      "reason": "The existing planning date remains unchanged and must not be restated as a customer commitment.",
+      "expected_user_action": "acknowledge_no_change",
+      "risk_level": "high"
+    },
+    "amount": {
+      "outcome_state": "proposed_change",
+      "current_value": {
+        "currency": "USD",
+        "value": 90000
+      },
+      "proposed_value": {
+        "currency": "USD",
+        "value": 96000
+      },
+      "customer_statement_evidence": [],
+      "decision_context": {
+        "user_provided_context": "Procurement emailed me after the meeting that the annual commercial total should be $96,000. This amount was not discussed in the transcript.",
+        "existing_crm_value": {
+          "currency": "USD",
+          "value": 90000
+        },
+        "fixture_rule": "User context may support an amount change only when it is visibly separated from transcript evidence and receives the additional context-only high-risk warning and confirmation."
+      },
+      "evidence_interpretation": "inferred",
+      "transcript_support": "none",
+      "required_warning": "This change is not supported by the transcript. It is based only on context you provided.",
+      "required_confirmation": "Apply using my provided context",
+      "reason": "The proposed amount comes only from the user's note and must never be presented as something said in the transcript.",
+      "expected_user_action": "explicitly_confirm_context_only_change",
+      "risk_level": "critical"
+    },
+    "notes": {
+      "outcome_state": "proposed_change",
+      "current_value": "Security-language review in progress. Legal owner and SOC 2 exception requirement not yet documented.",
+      "proposed_value": "Nina Patel owns the legal review. Section 4 requires revised SOC 2 exception language. Security negotiation remains open.",
+      "customer_statement_evidence": [
+        {
+          "excerpt": "In the notes, please capture that I own the legal review and that section 4 needs the SOC 2 exception language we discussed.",
+          "speaker": "Nina Patel",
+          "timestamp": "01:51",
+          "interpretation": "explicit"
+        },
+        {
+          "excerpt": "We are still negotiating the security language.",
+          "speaker": "Nina Patel",
+          "timestamp": "00:14",
+          "interpretation": "explicit"
+        }
+      ],
+      "decision_context": {
+        "user_provided_context": null,
+        "existing_crm_value": "Security-language review in progress. Legal owner and SOC 2 exception requirement not yet documented.",
+        "fixture_rule": "Add material legal-review ownership and requirements explicitly stated in the transcript. A user edit may clarify wording without changing supported meaning."
+      },
+      "initial_system_proposal": "Nina owns legal. Add SOC 2 exception language to section 4.",
+      "reason": "The evaluator edits the system wording to retain the unresolved negotiation state and clarify the supported facts without changing their meaning.",
+      "expected_user_action": "edit_then_approve",
+      "risk_level": "medium"
+    }
+  },
+  "simulated_apply_sequence": [
+    {
+      "sequence": 1,
+      "field": "deal_stage",
+      "user_action": "acknowledged_no_change",
+      "apply_result": "skipped",
+      "reason": "No CRM write is needed because the field remains unchanged."
+    },
+    {
+      "sequence": 2,
+      "field": "close_date",
+      "user_action": "acknowledged_no_change",
+      "apply_result": "skipped",
+      "reason": "No CRM write is needed because the field remains unchanged."
+    },
+    {
+      "sequence": 3,
+      "field": "amount",
+      "user_action": "confirmed_apply_using_my_provided_context",
+      "apply_result": "applied",
+      "reason": "The evaluator completed the required extra warning and confirmation for a context-only high-risk change."
+    },
+    {
+      "sequence": 4,
+      "field": "notes",
+      "user_action": "edited_then_approved",
+      "apply_result": "applied",
+      "reason": "The edited wording preserves the transcript-supported meaning."
+    },
+    {
+      "sequence": 5,
+      "field": "next_step",
+      "user_action": "added_manually_by_user",
+      "apply_result": "failed",
+      "failure_code": "SIMULATED_FIXTURE_VALIDATION_FAILURE",
+      "reason": "Injected failure for the partial-apply scenario."
+    },
+    {
+      "sequence": 6,
+      "field": "next_step",
+      "user_action": "skip_after_failure",
+      "apply_result": "skipped",
+      "reason": "The evaluator intentionally skips the failed item after reviewing the failure; the audit must retain both events."
+    }
+  ],
+  "expected_audit_events": [
+    {
+      "event_type": "opportunity_confirmed",
+      "actor": "internal_evaluator_as_ae",
+      "opportunity_id": "FP-DEAL-0301",
+      "expected_result": "confirmed"
+    },
+    {
+      "event_type": "field_reviewed",
+      "field": "deal_stage",
+      "user_action": "acknowledged_no_change",
+      "expected_result": "skipped_no_write"
+    },
+    {
+      "event_type": "field_reviewed",
+      "field": "close_date",
+      "user_action": "acknowledged_no_change",
+      "expected_result": "skipped_no_write"
+    },
+    {
+      "event_type": "context_only_warning_shown",
+      "field": "amount",
+      "source_provenance": "user_provided_context_only",
+      "expected_result": "warning_acknowledged"
+    },
+    {
+      "event_type": "context_only_change_confirmed",
+      "field": "amount",
+      "user_action": "Apply using my provided context",
+      "expected_result": "simulated_applied"
+    },
+    {
+      "event_type": "field_edited",
+      "field": "notes",
+      "user_action": "edited_then_approved",
+      "expected_result": "simulated_applied"
+    },
+    {
+      "event_type": "system_suggestion_omitted",
+      "field": "next_step",
+      "expected_result": "miss_detected_by_evaluator"
+    },
+    {
+      "event_type": "manual_change_added",
+      "field": "next_step",
+      "audit_label": "Added manually by user",
+      "expected_result": "queued_for_simulated_apply"
+    },
+    {
+      "event_type": "simulated_apply_failed",
+      "field": "next_step",
+      "failure_code": "SIMULATED_FIXTURE_VALIDATION_FAILURE",
+      "expected_result": "not_applied"
+    },
+    {
+      "event_type": "failed_change_skipped",
+      "field": "next_step",
+      "user_action": "skip_after_failure",
+      "expected_result": "failure_resolved_as_intentionally_skipped"
+    },
+    {
+      "event_type": "partial_apply_summary",
+      "applied_fields": [
+        "amount",
+        "notes"
+      ],
+      "skipped_fields": [
+        "deal_stage",
+        "close_date",
+        "next_step"
+      ],
+      "failed_then_skipped_fields": [
+        "next_step"
+      ],
+      "edited_fields": [
+        "notes"
+      ],
+      "manually_added_fields": [
+        "next_step"
+      ],
+      "unresolved_failures": [],
+      "expected_result": "partial_success_with_no_unresolved_failure"
+    },
+    {
+      "event_type": "final_confirmation",
+      "actor": "internal_evaluator_as_ae",
+      "expected_result": "completed_after_failure_was_intentionally_skipped"
+    }
+  ]
+}

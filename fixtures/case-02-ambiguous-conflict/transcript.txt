@@ -1,0 +1,27 @@
+Synthetic evaluation transcript
+Case: case-02-ambiguous-conflict
+Meeting: Northstar Retail commercial and legal check-in
+Date: 2026-08-05
+Data status: Entirely fictional; no real customer or company information.
+
+[00:00] Marcus Lee (Account Executive): I want to confirm the remaining legal and commercial steps for the Northstar rollout.
+
+[00:16] Priya Nair (Procurement Lead, Northstar Retail): Send the revised data-processing redlines to me by Friday, August 7. I will route them to legal.
+
+[00:41] Marcus Lee: The current quote is $72,000 annually. Is that still the approved amount?
+
+[00:49] Dana Brooks (VP of Operations, Northstar Retail): Yes, the $72,000 quote is the number operations approved.
+
+[01:18] Marcus Lee: And should we still plan around the September 15 close date?
+
+[01:25] Dana Brooks: Legal might finish around the middle of next month, but that is only a guess. I cannot confirm a signing date today.
+
+[02:06] Priya Nair: We are reviewing the proposal, but legal has not accepted the redlines, so we are not ready to call this negotiation complete.
+
+[Speaker unknown | Timestamp not provided] Finance sent a note this morning that our cap may actually be $65,000. I do not know yet whether operations' $72,000 approval or the finance cap will control.
+
+[03:12] Marcus Lee: So I should not choose between $72,000 and $65,000 until Northstar resolves it?
+
+[03:19] Dana Brooks: Correct. Do not treat either amount as final yet.
+
+[03:33] Priya Nair: The only firm action today is for you to send me the revised redlines by Friday.

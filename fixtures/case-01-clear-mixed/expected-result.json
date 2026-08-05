@@ -1,0 +1,189 @@
+{
+  "case_id": "case-01-clear-mixed",
+  "case_name": "Clear mixed outcome",
+  "result_label": "Product-team reference assumptions, pending sales/RevOps review",
+  "validated_ground_truth": false,
+  "allowed_outcome_states": [
+    "proposed_change",
+    "no_change",
+    "unable_to_determine",
+    "conflict"
+  ],
+  "opportunity_confirmation": {
+    "expected_opportunity_id": "FP-DEAL-0101",
+    "expected_action": "confirm",
+    "reason": "The transcript names BluePeak Analytics and concerns one open annual-platform opportunity."
+  },
+  "audit_event_requirements": {
+    "record_timestamp_at_runtime": true,
+    "required_attributes": [
+      "actor",
+      "opportunity_id",
+      "field_when_applicable",
+      "before_value_when_applicable",
+      "after_value_when_applicable",
+      "reason",
+      "customer_statement_evidence",
+      "decision_context",
+      "user_action",
+      "simulation_result"
+    ],
+    "source_types_must_remain_separate": true
+  },
+  "fields": {
+    "deal_stage": {
+      "outcome_state": "proposed_change",
+      "current_value": "discovery",
+      "proposed_value": "proposal",
+      "customer_statement_evidence": [
+        {
+          "excerpt": "We finished the technical evaluation yesterday. The team is comfortable moving forward to a formal proposal review.",
+          "speaker": "Maya Chen",
+          "timestamp": "00:18",
+          "interpretation": "explicit"
+        }
+      ],
+      "decision_context": {
+        "user_provided_context": null,
+        "existing_crm_value": "discovery",
+        "fixture_rule": "Move from discovery to proposal only when the customer explicitly confirms evaluation is complete and agrees to review a formal proposal."
+      },
+      "reason": "The customer explicitly states that evaluation is complete and agrees to a formal proposal review.",
+      "expected_user_action": "approve",
+      "risk_level": "high"
+    },
+    "next_step": {
+      "outcome_state": "proposed_change",
+      "current_value": "Technical evaluation with operations team",
+      "proposed_value": "Send formal proposal by 2026-08-06; proposal review with Maya Chen and Omar Haddad on 2026-08-07 at 14:00 ET",
+      "customer_statement_evidence": [
+        {
+          "excerpt": "Please send the formal proposal tomorrow, then let's review it with Omar on Friday, August 7 at 2:00 p.m. Eastern.",
+          "speaker": "Maya Chen",
+          "timestamp": "01:33",
+          "interpretation": "explicit"
+        }
+      ],
+      "decision_context": {
+        "user_provided_context": null,
+        "existing_crm_value": "Technical evaluation with operations team",
+        "fixture_rule": "Record the next concrete action with owner and exact timing when explicitly stated."
+      },
+      "reason": "The transcript supplies a concrete action, participants, date, time, and timezone.",
+      "expected_user_action": "approve",
+      "risk_level": "medium"
+    },
+    "close_date": {
+      "outcome_state": "no_change",
+      "current_value": "2026-09-30",
+      "proposed_value": null,
+      "customer_statement_evidence": [
+        {
+          "excerpt": "Yes, September 30, 2026 still works as our target. Procurement has not promised an earlier signature.",
+          "speaker": "Maya Chen",
+          "timestamp": "01:10",
+          "interpretation": "explicit"
+        }
+      ],
+      "decision_context": {
+        "user_provided_context": null,
+        "existing_crm_value": "2026-09-30",
+        "fixture_rule": "Change the close date only when the customer clearly confirms a different specific date; otherwise retain the existing value."
+      },
+      "reason": "The customer explicitly confirms the existing target date and does not commit to a different date.",
+      "expected_user_action": "acknowledge_no_change",
+      "risk_level": "high"
+    },
+    "amount": {
+      "outcome_state": "no_change",
+      "current_value": {
+        "currency": "USD",
+        "value": 48000
+      },
+      "proposed_value": null,
+      "customer_statement_evidence": [
+        {
+          "excerpt": "No, keep the scope and the $48,000 annual amount as quoted.",
+          "speaker": "Maya Chen",
+          "timestamp": "00:45",
+          "interpretation": "explicit"
+        }
+      ],
+      "decision_context": {
+        "user_provided_context": null,
+        "existing_crm_value": {
+          "currency": "USD",
+          "value": 48000
+        },
+        "fixture_rule": "Change amount only when the commercial value or scope is explicitly confirmed as different; otherwise retain the existing value."
+      },
+      "reason": "The customer explicitly confirms the existing amount and scope.",
+      "expected_user_action": "acknowledge_no_change",
+      "risk_level": "high"
+    },
+    "notes": {
+      "outcome_state": "proposed_change",
+      "current_value": "Technical evaluation in progress with Maya Chen. Security and procurement ownership not yet documented.",
+      "proposed_value": "Technical evaluation completed. Include the security questionnaire with the proposal. Omar Haddad from procurement will lead the commercial review.",
+      "customer_statement_evidence": [
+        {
+          "excerpt": "Add the security questionnaire and note that Omar Haddad from procurement will lead the commercial review.",
+          "speaker": "Maya Chen",
+          "timestamp": "01:56",
+          "interpretation": "explicit"
+        }
+      ],
+      "decision_context": {
+        "user_provided_context": null,
+        "existing_crm_value": "Technical evaluation in progress with Maya Chen. Security and procurement ownership not yet documented.",
+        "fixture_rule": "Add material buying-process facts or requirements explicitly stated during the call without removing still-relevant prior notes."
+      },
+      "reason": "The customer explicitly identifies a security deliverable and the procurement owner.",
+      "expected_user_action": "approve",
+      "risk_level": "low"
+    }
+  },
+  "expected_audit_events": [
+    {
+      "event_type": "opportunity_confirmed",
+      "actor": "internal_evaluator_as_ae",
+      "opportunity_id": "FP-DEAL-0101",
+      "expected_result": "confirmed"
+    },
+    {
+      "event_type": "field_reviewed",
+      "field": "deal_stage",
+      "user_action": "approved",
+      "expected_result": "simulated_applied"
+    },
+    {
+      "event_type": "field_reviewed",
+      "field": "next_step",
+      "user_action": "approved",
+      "expected_result": "simulated_applied"
+    },
+    {
+      "event_type": "field_reviewed",
+      "field": "close_date",
+      "user_action": "acknowledged_no_change",
+      "expected_result": "not_applied_no_change"
+    },
+    {
+      "event_type": "field_reviewed",
+      "field": "amount",
+      "user_action": "acknowledged_no_change",
+      "expected_result": "not_applied_no_change"
+    },
+    {
+      "event_type": "field_reviewed",
+      "field": "notes",
+      "user_action": "approved",
+      "expected_result": "simulated_applied"
+    },
+    {
+      "event_type": "final_confirmation",
+      "actor": "internal_evaluator_as_ae",
+      "expected_result": "confirmed"
+    }
+  ]
+}
