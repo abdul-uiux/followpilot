@@ -1,6 +1,7 @@
 "use client";
 
 import { type ChangeEvent, type FormEvent, useMemo, useState } from "react";
+import Link from "next/link";
 import {
   fieldKeys,
   type AuditEntry,
@@ -166,9 +167,10 @@ function AppShell({ children, onNewMeeting }: { children: React.ReactNode; onNew
           <span className="text-base leading-none">+</span> New meeting
         </button>
         <nav aria-label="Primary navigation" className="mt-6 space-y-1 text-sm">
-          <a href="#workspace" className="flex items-center gap-3 rounded-md bg-[#e9e9e7] px-3 py-2 font-medium"><span>⌂</span> Home</a>
-          <a href="#recent" className="flex items-center gap-3 rounded-md px-3 py-2 text-[#625f5c] transition hover:bg-[#efefed]"><span>◷</span> Meetings</a>
-          <a href="#templates" className="flex items-center gap-3 rounded-md px-3 py-2 text-[#625f5c] transition hover:bg-[#efefed]"><span>□</span> Templates</a>
+          <Link href="/" className="flex items-center gap-3 rounded-md bg-[#e9e9e7] px-3 py-2 font-medium"><span className="grid h-4 w-4 place-items-center text-[14px] leading-none">⌂</span> Home</Link>
+          <Link href="/meetings" className="flex items-center gap-3 rounded-md px-3 py-2 text-[#625f5c] transition hover:bg-[#efefed]"><span className="grid h-4 w-4 place-items-center text-[14px] leading-none">◷</span> Meetings</Link>
+          <a href="#integrations" className="flex items-center gap-3 rounded-md px-3 py-2 text-[#625f5c] transition hover:bg-[#efefed]"><span className="grid h-4 w-4 place-items-center text-[14px] leading-none">⌘</span> Integrations</a>
+          <a href="#settings" className="flex items-center gap-3 rounded-md px-3 py-2 text-[#625f5c] transition hover:bg-[#efefed]"><span className="grid h-4 w-4 place-items-center text-[14px] leading-none">⚙</span> Settings</a>
         </nav>
         <div className="mt-auto rounded-lg border border-[#e8e7e4] bg-white p-3">
           <div className="flex items-center gap-2.5">
@@ -177,7 +179,7 @@ function AppShell({ children, onNewMeeting }: { children: React.ReactNode; onNew
           </div>
         </div>
       </aside>
-      <div className="lg:pl-64">{children}</div>
+      <div className="lg:pl-60">{children}</div>
     </div>
   );
 }

@@ -27,6 +27,16 @@ textarea {
   font: inherit;
 }
 
+button {
+  font-size: 13px;
+}
+
+input,
+select,
+textarea {
+  font-size: 13px;
+}
+
 button,
 a,
 input,
