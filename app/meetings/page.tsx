@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { AppSidebar } from "../components/app-sidebar";
 
 type Meeting = {
   id: string;
@@ -182,17 +183,7 @@ export default function MeetingsPage() {
 
   return (
     <div className="min-h-screen bg-[#f7f7f5] text-[#191919]">
-      <aside className="fixed inset-y-0 left-0 z-20 hidden w-60 border-r border-[#e8e7e4] bg-[#fbfbfa] px-3 py-4 lg:flex lg:flex-col">
-        <Link href="/" className="flex items-center gap-2.5 px-2"><div className="grid h-7 w-7 place-items-center rounded-md bg-[#191919] text-xs font-bold text-white">F</div><span className="text-sm font-semibold tracking-[-0.02em]">FollowPilot</span></Link>
-        <Link href="/" className="mt-6 flex items-center justify-center gap-2 rounded-lg bg-[#191919] px-4 py-2.5 text-[13px] font-medium text-white transition hover:bg-[#353535]"><span className="text-base leading-none">+</span> New meeting</Link>
-        <nav aria-label="Primary navigation" className="mt-6 space-y-1 text-sm">
-          <Link href="/" className="flex items-center gap-3 rounded-md px-3 py-2 text-[#625f5c] transition hover:bg-[#efefed]"><span className="grid h-4 w-4 place-items-center text-[14px] leading-none">⌂</span> Home</Link>
-          <Link href="/meetings" aria-current="page" className="flex items-center gap-3 rounded-md bg-[#e9e9e7] px-3 py-2 font-medium"><span className="grid h-4 w-4 place-items-center text-[14px] leading-none">◷</span> Meetings</Link>
-          <a href="#integrations" className="flex items-center gap-3 rounded-md px-3 py-2 text-[#625f5c] transition hover:bg-[#efefed]"><span className="grid h-4 w-4 place-items-center text-[14px] leading-none">⌘</span> Integrations</a>
-          <a href="#settings" className="flex items-center gap-3 rounded-md px-3 py-2 text-[#625f5c] transition hover:bg-[#efefed]"><span className="grid h-4 w-4 place-items-center text-[14px] leading-none">⚙</span> Settings</a>
-        </nav>
-        <div className="mt-auto rounded-lg border border-[#e8e7e4] bg-white p-3"><div className="flex items-center gap-2.5"><div className="grid h-7 w-7 place-items-center rounded-full bg-[#e8e7e4] text-[10px] font-semibold">AR</div><div><p className="text-xs font-medium">Alex Rivera</p><p className="text-[11px] text-[#787774]">Personal workspace</p></div></div></div>
-      </aside>
+      <AppSidebar activePage="meetings" />
 
       <div className="lg:pl-60">
         <header className="flex h-14 items-center justify-between border-b border-[#e8e7e4] bg-[#fbfbfa] px-5 sm:px-7"><div><p className="text-sm font-medium">Meetings</p><p className="text-[11px] text-[#787774]">Fixture workspace</p></div><Link href="/" className="rounded-md bg-[#191919] px-3 py-2 text-[13px] font-medium text-white transition hover:bg-[#353535] lg:hidden">+ New</Link><div className="hidden items-center gap-2 sm:flex">{searchOpen ? <div className="flex items-center rounded-md border border-[#c9c8c5] bg-white px-3 text-[#625f5c] focus-within:border-[#191919] focus-within:ring-4 focus-within:ring-[#e9e9e7]"><SearchIcon /><input autoFocus value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} aria-label="Search meetings" placeholder="Search meetings" className="h-9 w-64 bg-transparent px-2 text-[12px] text-[#191919] outline-none placeholder:text-[#9b9995]" /><button type="button" onClick={() => { setSearchOpen(false); setSearchQuery(""); }} aria-label="Close search" className="grid h-6 w-6 place-items-center rounded text-[13px] hover:bg-[#efefed]">×</button></div> : <button type="button" onClick={() => setSearchOpen(true)} aria-label="Search meetings" className="grid h-8 w-8 place-items-center rounded-md text-[#625f5c] transition hover:bg-[#efefed] hover:text-[#191919] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#e9e9e7]"><SearchIcon /></button>}<div className="mx-1 h-6 w-px bg-[#e8e7e4]" /><span className="text-xs text-[#787774]">Alex Rivera</span><div className="grid h-7 w-7 place-items-center rounded-full bg-[#e8e7e4] text-[10px] font-semibold">AR</div></div></header>

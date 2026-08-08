@@ -1,7 +1,7 @@
 "use client";
 
 import { type ChangeEvent, type FormEvent, useMemo, useState } from "react";
-import Link from "next/link";
+import { AppSidebar } from "./components/app-sidebar";
 import {
   fieldKeys,
   type AuditEntry,
@@ -26,6 +26,8 @@ type ApprovedChange = {
   action: "approved" | "edited" | "manual";
   risk: RiskLevel;
 };
+
+const authSessionKey = "followpilot-demo-authenticated";
 
 const fieldLabels: Record<FieldKey, string> = {
   deal_stage: "Deal stage",
@@ -158,27 +160,7 @@ function AuthScreen({
 function AppShell({ children, onNewMeeting }: { children: React.ReactNode; onNewMeeting: () => void }) {
   return (
     <div className="min-h-screen bg-[#f7f7f5] text-[#191919]">
-      <aside className="fixed inset-y-0 left-0 z-20 hidden w-60 border-r border-[#e8e7e4] bg-[#fbfbfa] px-3 py-4 lg:flex lg:flex-col">
-        <div className="flex items-center gap-2.5 px-2">
-          <div className="grid h-7 w-7 place-items-center rounded-md bg-[#191919] text-xs font-bold text-white">F</div>
-          <span className="text-sm font-semibold tracking-[-0.02em]">FollowPilot</span>
-        </div>
-        <button type="button" onClick={onNewMeeting} className="mt-6 flex items-center justify-center gap-2 rounded-lg bg-[#191919] px-4 py-2.5 text-sm font-medium text-white transition hover:bg-[#353535] focus:outline-none focus:ring-4 focus:ring-[#d9d9d7]">
-          <span className="text-base leading-none">+</span> New meeting
-        </button>
-        <nav aria-label="Primary navigation" className="mt-6 space-y-1 text-sm">
-          <Link href="/" className="flex items-center gap-3 rounded-md bg-[#e9e9e7] px-3 py-2 font-medium"><span className="grid h-4 w-4 place-items-center text-[14px] leading-none">⌂</span> Home</Link>
-          <Link href="/meetings" className="flex items-center gap-3 rounded-md px-3 py-2 text-[#625f5c] transition hover:bg-[#efefed]"><span className="grid h-4 w-4 place-items-center text-[14px] leading-none">◷</span> Meetings</Link>
-          <a href="#integrations" className="flex items-center gap-3 rounded-md px-3 py-2 text-[#625f5c] transition hover:bg-[#efefed]"><span className="grid h-4 w-4 place-items-center text-[14px] leading-none">⌘</span> Integrations</a>
-          <a href="#settings" className="flex items-center gap-3 rounded-md px-3 py-2 text-[#625f5c] transition hover:bg-[#efefed]"><span className="grid h-4 w-4 place-items-center text-[14px] leading-none">⚙</span> Settings</a>
-        </nav>
-        <div className="mt-auto rounded-lg border border-[#e8e7e4] bg-white p-3">
-          <div className="flex items-center gap-2.5">
-            <div className="grid h-7 w-7 place-items-center rounded-full bg-[#e8e7e4] text-[10px] font-semibold">AR</div>
-            <div className="min-w-0"><p className="truncate text-xs font-medium">Alex Rivera</p><p className="truncate text-[11px] text-[#787774]">Personal workspace</p></div>
-          </div>
-        </div>
-      </aside>
+      <AppSidebar activePage="home" onNewMeeting={onNewMeeting} />
       <div className="lg:pl-60">{children}</div>
     </div>
   );
@@ -537,7 +519,9 @@ export default function FollowPilotReview({
   fixture: FixtureRecord;
   expected: ExpectedResult;
 }) {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(
+    () => typeof window !== "undefined" && window.sessionStorage.getItem(authSessionKey) === "true",
+  );
   const [authMode, setAuthMode] = useState<"sign-in" | "sign-up">("sign-in");
   const [step, setStep] = useState<FlowStep>("dashboard");
   const [transcript, setTranscript] = useState(initialTranscript);
@@ -568,6 +552,11 @@ export default function FollowPilotReview({
   const [manualValue, setManualValue] = useState("");
   const [manualReason, setManualReason] = useState("");
   const [audit, setAudit] = useState<AuditEntry[]>([]);
+
+  const completeAuthentication = () => {
+    window.sessionStorage.setItem(authSessionKey, "true");
+    setIsAuthenticated(true);
+  };
 
   const addAudit = (event: string, detail: string, result: string) => {
     setAudit((current) => [
@@ -701,7 +690,7 @@ export default function FollowPilotReview({
   };
 
   if (!isAuthenticated) {
-    return <AuthScreen mode={authMode} onModeChange={setAuthMode} onAuthenticated={() => setIsAuthenticated(true)} />;
+    return <AuthScreen mode={authMode} onModeChange={setAuthMode} onAuthenticated={completeAuthentication} />;
   }
 
   return (
