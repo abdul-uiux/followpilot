@@ -1,7 +1,9 @@
 "use client";
 
 import { type ChangeEvent, type FormEvent, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { AppSidebar } from "./components/app-sidebar";
+import { useToast } from "./components/toast-provider";
 import {
   fieldKeys,
   type AuditEntry,
@@ -45,6 +47,7 @@ const outcomeLabels: Record<FieldResult["outcome_state"], string> = {
 };
 
 const steps: Array<{ key: FlowStep; label: string }> = [
+  { key: "dashboard", label: "Transcript" },
   { key: "intake", label: "Confirm record" },
   { key: "review", label: "Review fields" },
   { key: "summary", label: "Final check" },
@@ -52,11 +55,11 @@ const steps: Array<{ key: FlowStep; label: string }> = [
 ];
 
 const stepOrder: Record<FlowStep, number> = {
-  dashboard: -1,
-  intake: 0,
-  review: 1,
-  summary: 2,
-  complete: 3,
+  dashboard: 0,
+  intake: 1,
+  review: 2,
+  summary: 3,
+  complete: 4,
 };
 
 function cx(...classes: Array<string | false | null | undefined>) {
@@ -254,38 +257,61 @@ function RiskPill({ risk }: { risk: RiskLevel }) {
   return <span className={cx("rounded-full border px-2 py-1 text-xs font-medium", style)}>{risk} risk</span>;
 }
 
-function Progress({ step }: { step: FlowStep }) {
+function Progress({ step, onStepChange }: { step: FlowStep; onStepChange: (step: FlowStep) => void }) {
+  const activeIndex = stepOrder[step];
+  const currentStep = steps[activeIndex];
+
   return (
-    <nav aria-label="Review progress" className="border-b border-slate-200 bg-white">
-      <ol className="mx-auto grid max-w-[1480px] grid-cols-4 px-4 sm:px-6 lg:px-8">
+    <nav aria-label="Review progress" className="border-b border-[#e8e7e4] bg-white">
+      <div className="mx-auto max-w-[1480px] px-4 py-4 sm:px-6 lg:px-8">
+        <div className="mb-3 flex items-center justify-between text-xs">
+          <span className="font-medium text-[#191919]">{currentStep.label}</span>
+          <span className="text-[#787774]">Step {activeIndex + 1} of {steps.length}</span>
+        </div>
+      <ol className="flex">
         {steps.map((item, index) => {
           const current = item.key === step;
-          const complete = index < stepOrder[step];
+          const complete = index < activeIndex;
+          const available = index <= activeIndex;
           return (
             <li
               key={item.key}
-              className={cx(
-                "flex items-center gap-2 border-b-2 py-3 text-xs sm:text-sm",
-                current && "border-stone-900 font-semibold text-stone-900",
-                complete && "border-emerald-500 text-slate-700",
-                !current && !complete && "border-transparent text-slate-400",
-              )}
+              className="min-w-0 flex-1"
             >
-              <span
+              <button
+                type="button"
+                disabled={!available}
+                onClick={() => available && onStepChange(item.key)}
+                aria-current={current ? "step" : undefined}
                 className={cx(
-                  "grid h-6 w-6 shrink-0 place-items-center rounded-full text-[10px] font-bold",
-                  current && "bg-stone-900 text-white",
-                  complete && "bg-emerald-100 text-emerald-700",
-                  !current && !complete && "bg-slate-100 text-slate-500",
+                  "group w-full text-left outline-none focus-visible:ring-4 focus-visible:ring-[#e9e9e7] disabled:cursor-default",
+                  !available && "cursor-default",
                 )}
               >
-                {complete ? <CheckIcon /> : `0${index + 1}`}
-              </span>
-              <span className="hidden sm:inline">{item.label}</span>
+                <span className="flex items-center">
+                  <span
+                    className={cx(
+                      "grid h-7 w-7 shrink-0 place-items-center rounded-full border text-[11px] font-semibold transition",
+                      current && "border-[#191919] bg-[#191919] text-white",
+                      complete && "border-[#191919] bg-white text-[#191919]",
+                      !current && !complete && "border-[#deddda] bg-white text-[#9b9995]",
+                    )}
+                  >
+                    {complete ? <CheckIcon className="h-3.5 w-3.5" /> : index + 1}
+                  </span>
+                  {index < steps.length - 1 && (
+                    <span className={cx("h-px flex-1 bg-[#deddda]", complete && "bg-[#191919]")} />
+                  )}
+                </span>
+                <span className={cx("mt-2 hidden pr-2 text-[11px] font-medium leading-4 sm:block", current || complete ? "text-[#191919]" : "text-[#9b9995]")}>
+                  {item.label}
+                </span>
+              </button>
             </li>
           );
         })}
       </ol>
+      </div>
     </nav>
   );
 }
@@ -514,14 +540,19 @@ export default function FollowPilotReview({
   transcript: initialTranscript,
   fixture,
   expected,
+  showOnboarding = false,
 }: {
   transcript: string;
   fixture: FixtureRecord;
   expected: ExpectedResult;
+  showOnboarding?: boolean;
 }) {
+  const { showToast } = useToast();
+  const router = useRouter();
   const [isAuthenticated, setIsAuthenticated] = useState(
     () => typeof window !== "undefined" && window.sessionStorage.getItem(authSessionKey) === "true",
   );
+  const [isOnboarding, setIsOnboarding] = useState(showOnboarding);
   const [authMode, setAuthMode] = useState<"sign-in" | "sign-up">("sign-in");
   const [step, setStep] = useState<FlowStep>("dashboard");
   const [transcript, setTranscript] = useState(initialTranscript);
@@ -633,8 +664,15 @@ export default function FollowPilotReview({
 
   const analyzeMeeting = () => {
     setUploadOpen(false);
+    setIsOnboarding(false);
+    window.history.replaceState(null, "", "/");
     addAudit("Transcript submitted", `${meetingTitle || "Untitled meeting"} prepared for fixture analysis`, "Analysis ready");
     setStep("intake");
+    showToast("Meeting review is ready");
+  };
+
+  const startSampleReview = () => {
+    router.push("/meetings?sample=1");
   };
 
   const approve = (field: FieldKey) => {
@@ -704,7 +742,19 @@ export default function FollowPilotReview({
 
         <UploadModal open={uploadOpen} onClose={() => setUploadOpen(false)} onAnalyze={analyzeMeeting} transcript={transcript} setTranscript={setTranscript} meetingTitle={meetingTitle} setMeetingTitle={setMeetingTitle} attendees={attendees} setAttendees={setAttendees} about={meetingAbout} setAbout={setMeetingAbout} fileName={uploadedFileName} onFile={handleTranscriptFile} authorized={authorizedToShare} setAuthorized={setAuthorizedToShare} />
 
-        {step === "dashboard" && (
+        {step === "dashboard" && isOnboarding && (
+          <div className="mx-auto flex min-h-[calc(100vh-3.5rem)] max-w-5xl items-center px-5 py-10 sm:px-8 lg:py-14">
+            <section className="w-full overflow-hidden rounded-2xl border border-[#deddda] bg-white shadow-[0_1px_2px_rgba(0,0,0,0.03)]">
+              <div className="grid gap-8 p-6 sm:p-10 lg:grid-cols-[minmax(0,1fr)_240px] lg:items-end">
+                <div className="max-w-xl"><div className="grid h-11 w-11 place-items-center rounded-xl bg-[#191919] text-white"><SparkIcon className="h-5 w-5" /></div><p className="mt-6 text-xs font-semibold tracking-[0.14em] text-[#787774] uppercase">Your review workspace</p><h1 className="mt-2 text-3xl font-semibold tracking-[-0.04em] sm:text-4xl">Start with your first customer conversation.</h1><p className="mt-3 text-sm leading-6 text-[#625f5c]">Paste a transcript and FollowPilot will prepare the CRM changes for your review. Nothing is updated without your approval.</p><div className="mt-6 flex flex-wrap items-center gap-2"><button type="button" onClick={() => setUploadOpen(true)} className="inline-flex items-center gap-2 rounded-md bg-[#191919] px-3.5 py-2.5 text-[13px] font-medium text-white transition hover:bg-[#353535] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#d9d9d7]"><span className="text-base leading-none">+</span> Create your first review</button><button type="button" onClick={startSampleReview} className="rounded-md border border-[#deddda] bg-white px-3.5 py-2.5 text-[13px] font-medium text-[#52504d] transition hover:border-[#9b9995] hover:text-[#191919] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#e9e9e7]">Try a sample review</button></div></div>
+                <div className="rounded-xl border border-[#ececea] bg-[#fafaf9] p-5"><p className="text-[11px] font-semibold tracking-[0.12em] text-[#787774] uppercase">How it works</p><ol className="mt-4 space-y-4">{["Add a customer-call transcript", "Review suggested CRM changes", "Approve only what is correct"].map((item, index) => <li key={item} className="flex gap-3 text-xs leading-5 text-[#625f5c]"><span className="grid h-5 w-5 shrink-0 place-items-center rounded-full border border-[#deddda] bg-white text-[10px] font-semibold text-[#52504d]">{index + 1}</span>{item}</li>)}</ol></div>
+              </div>
+              <div className="border-t border-[#ececea] bg-[#fafaf9] px-6 py-3 text-xs text-[#787774] sm:px-10">You can upload a .txt file or paste a transcript directly.</div>
+            </section>
+          </div>
+        )}
+
+        {step === "dashboard" && !isOnboarding && (
           <div className="mx-auto max-w-5xl px-5 py-10 sm:px-8 lg:py-14">
             <div className="max-w-2xl"><h1 className="text-2xl font-semibold tracking-[-0.03em] sm:text-[28px]">Good morning, Alex</h1><p className="mt-2 text-sm leading-6 text-[#625f5c]">Paste a customer-call transcript and FollowPilot will prepare the CRM review for you.</p></div>
             <section className="mt-8 rounded-xl border border-[#deddda] bg-white p-4 shadow-[0_1px_2px_rgba(0,0,0,0.03)] sm:p-5"><textarea aria-label="Paste a meeting transcript" value={transcript} onChange={(event) => setTranscript(event.target.value)} placeholder="Paste your meeting transcript here…" className="min-h-52 w-full resize-y border-0 bg-transparent p-1 text-sm leading-6 outline-none placeholder:text-[#9b9995]" /><div className="mt-3 flex flex-col gap-3 border-t border-[#ececea] pt-3 sm:flex-row sm:items-center sm:justify-between"><p className="text-xs text-[#787774]">{transcript.trim() ? `${transcript.length.toLocaleString()} characters ready to analyze` : "Paste a transcript or upload a .txt file"}</p><div className="flex items-center gap-2"><button type="button" onClick={() => setUploadOpen(true)} className="rounded-md px-3 py-2 text-sm font-medium text-[#625f5c] hover:bg-[#f2f2f0]">Add details</button><button type="button" onClick={() => setUploadOpen(true)} disabled={!transcript.trim()} className="inline-flex items-center gap-2 rounded-md bg-[#191919] px-3.5 py-2 text-sm font-medium text-white transition hover:bg-[#353535] disabled:cursor-not-allowed disabled:opacity-40"><SparkIcon /> Analyze</button></div></div></section>
@@ -713,7 +763,7 @@ export default function FollowPilotReview({
           </div>
         )}
 
-        {step !== "dashboard" && <Progress step={step} />}
+        {step !== "dashboard" && <Progress step={step} onStepChange={setStep} />}
 
       {step === "intake" && (
         <div className="mx-auto max-w-[1480px] px-4 py-8 sm:px-6 lg:px-8 lg:py-12">

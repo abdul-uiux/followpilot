@@ -3,6 +3,28 @@
 import Link from "next/link";
 import { useState } from "react";
 import { AppSidebar } from "../components/app-sidebar";
+import { useToast } from "../components/toast-provider";
+
+const settingsStorageKey = "followpilot-workspace-settings";
+const maxProfilePictureBytes = 2 * 1024 * 1024;
+
+type SavedSettings = {
+  name?: string;
+  workspaceName?: string;
+  profileImage?: string | null;
+  meetingSummary?: boolean;
+  reviewReminder?: boolean;
+  productUpdates?: boolean;
+};
+
+function loadSavedSettings(): SavedSettings {
+  if (typeof window === "undefined") return {};
+  try {
+    return JSON.parse(window.localStorage.getItem(settingsStorageKey) ?? "{}") as SavedSettings;
+  } catch {
+    return {};
+  }
+}
 
 function Toggle({ checked, onChange, label }: { checked: boolean; onChange: (checked: boolean) => void; label: string }) {
   return (
@@ -29,22 +51,55 @@ function SettingsRow({ title, description, children }: { title: string; descript
 }
 
 export default function SettingsPage() {
-  const [name, setName] = useState("Alex Rivera");
-  const [workspaceName, setWorkspaceName] = useState("Personal workspace");
-  const [profileImage, setProfileImage] = useState<string | null>(null);
-  const [meetingSummary, setMeetingSummary] = useState(true);
-  const [reviewReminder, setReviewReminder] = useState(true);
-  const [productUpdates, setProductUpdates] = useState(false);
-  const [saved, setSaved] = useState(false);
+  const savedSettings = useState(loadSavedSettings)[0];
+  const { showToast } = useToast();
+  const [name, setName] = useState(savedSettings.name ?? "Alex Rivera");
+  const [workspaceName, setWorkspaceName] = useState(savedSettings.workspaceName ?? "Personal workspace");
+  const [profileImage, setProfileImage] = useState<string | null>(savedSettings.profileImage ?? null);
+  const [meetingSummary, setMeetingSummary] = useState(savedSettings.meetingSummary ?? true);
+  const [reviewReminder, setReviewReminder] = useState(savedSettings.reviewReminder ?? true);
+  const [productUpdates, setProductUpdates] = useState(savedSettings.productUpdates ?? false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [confirmationName, setConfirmationName] = useState("");
+  const [workspaceDeleted, setWorkspaceDeleted] = useState(false);
 
   const saveChanges = () => {
-    setSaved(true);
-    window.setTimeout(() => setSaved(false), 2200);
+    try {
+      window.localStorage.setItem(settingsStorageKey, JSON.stringify({ name, workspaceName, profileImage, meetingSummary, reviewReminder, productUpdates }));
+      showToast("Changes saved");
+    } catch {
+      showToast("Could not save changes", "error");
+    }
   };
 
   const changeProfilePicture = (file: File | undefined) => {
-    if (file) setProfileImage(URL.createObjectURL(file));
+    if (!file) return;
+    if (file.size > maxProfilePictureBytes) {
+      showToast("Choose a picture smaller than 2 MB", "error");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === "string") {
+        setProfileImage(reader.result);
+        showToast("Profile picture ready to save");
+      }
+    };
+    reader.readAsDataURL(file);
   };
+
+  const deleteWorkspace = () => {
+    if (confirmationName.trim() !== workspaceName) return;
+    window.localStorage.removeItem(settingsStorageKey);
+    window.sessionStorage.removeItem("followpilot-demo-authenticated");
+    setDeleteOpen(false);
+    setWorkspaceDeleted(true);
+    showToast(`“${workspaceName}” was deleted`);
+  };
+
+  if (workspaceDeleted) {
+    return <div className="min-h-screen bg-[#f7f7f5] text-[#191919]"><main className="mx-auto flex min-h-screen max-w-md items-center px-5"><div><div className="grid h-11 w-11 place-items-center rounded-lg bg-[#191919] text-lg text-white">✓</div><p className="mt-5 text-xs font-semibold tracking-[0.14em] text-[#787774] uppercase">Workspace deleted</p><h1 className="mt-2 text-3xl font-semibold tracking-[-0.04em]">Your workspace has been permanently deleted.</h1><p className="mt-3 text-sm leading-6 text-[#625f5c]">All saved workspace preferences and demo review data have been cleared from this browser.</p><Link href="/" className="mt-7 inline-flex rounded-md bg-[#191919] px-3.5 py-2 text-[13px] font-medium text-white transition hover:bg-[#353535]">Return home</Link></div></main></div>;
+  }
 
   return (
     <div className="min-h-screen bg-[#f7f7f5] text-[#191919]">
@@ -64,7 +119,7 @@ export default function SettingsPage() {
               <div className="mb-3"><h2 id="profile-heading" className="text-[13px] font-semibold">Profile & workspace</h2><p className="mt-1 text-xs text-[#787774]">Personal details and defaults for this workspace.</p></div>
               <div className="overflow-hidden rounded-xl border border-[#deddda] bg-white">
                 <div className="flex flex-col gap-4 border-b border-[#ececea] p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
-                  <div className="flex items-center gap-3"><div className="grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-full bg-[#e8e7e4] bg-cover bg-center text-[13px] font-semibold" style={profileImage ? { backgroundImage: `url(${profileImage})` } : undefined}>{profileImage ? <span className="sr-only">Selected profile picture</span> : name.split(" ").map((part) => part[0]).join("").slice(0, 2).toUpperCase()}</div><div><p className="text-[13px] font-medium">Profile picture</p><p className="mt-1 text-xs text-[#787774]">PNG, JPG, or WebP. Up to 5 MB.</p></div></div>
+                  <div className="flex items-center gap-3"><div className="grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-full bg-[#e8e7e4] bg-cover bg-center text-[13px] font-semibold" style={profileImage ? { backgroundImage: `url(${profileImage})` } : undefined}>{profileImage ? <span className="sr-only">Selected profile picture</span> : name.split(" ").map((part) => part[0]).join("").slice(0, 2).toUpperCase()}</div><div><p className="text-[13px] font-medium">Profile picture</p><p className="mt-1 text-xs text-[#787774]">PNG, JPG, or WebP. Up to 2 MB.</p></div></div>
                   <label className="cursor-pointer self-start rounded-md border border-[#deddda] bg-white px-3 py-2 text-[13px] font-medium text-[#52504d] transition hover:border-[#9b9995] hover:text-[#191919] sm:self-auto">Change picture<input type="file" accept="image/png,image/jpeg,image/webp" onChange={(event) => changeProfilePicture(event.target.files?.[0])} className="sr-only" /></label>
                 </div>
                 <div className="grid gap-4 p-5 sm:grid-cols-2 sm:p-6">
@@ -79,12 +134,13 @@ export default function SettingsPage() {
 
             <section aria-labelledby="notifications-heading"><div className="mb-3"><h2 id="notifications-heading" className="text-[13px] font-semibold">Notifications</h2><p className="mt-1 text-xs text-[#787774]">Choose the moments that deserve your attention.</p></div><div className="divide-y divide-[#ececea] overflow-hidden rounded-xl border border-[#deddda] bg-white"><SettingsRow title="Meeting summaries" description="Send a concise email when a meeting review is ready."><Toggle checked={meetingSummary} onChange={setMeetingSummary} label="Meeting summaries" /></SettingsRow><SettingsRow title="Review reminders" description="Remind me when a review is waiting for a decision."><Toggle checked={reviewReminder} onChange={setReviewReminder} label="Review reminders" /></SettingsRow><SettingsRow title="Product updates" description="Occasional notes about improvements and new features."><Toggle checked={productUpdates} onChange={setProductUpdates} label="Product updates" /></SettingsRow></div></section>
 
-            <section aria-labelledby="privacy-heading"><div className="mb-3"><h2 id="privacy-heading" className="text-[13px] font-semibold">Privacy & data</h2><p className="mt-1 text-xs text-[#787774]">Clear, deliberate controls for your review history.</p></div><div className="overflow-hidden rounded-xl border border-[#deddda] bg-[#fffafa]"><SettingsRow title="Delete workspace" description="Permanently delete this demo workspace and its review history."><button type="button" className="rounded-md border border-[#f1c8c3] bg-white px-3 py-2 text-[13px] font-medium text-[#a8342a] transition hover:bg-[#fff4f2]">Delete workspace</button></SettingsRow></div></section>
+            <section aria-labelledby="privacy-heading"><div className="mb-3"><h2 id="privacy-heading" className="text-[13px] font-semibold">Privacy & data</h2><p className="mt-1 text-xs text-[#787774]">Clear, deliberate controls for your review history.</p></div><div className="overflow-hidden rounded-xl border border-[#deddda] bg-[#fffafa]"><SettingsRow title="Delete workspace" description="Permanently delete this demo workspace and all its review history."><button type="button" onClick={() => setDeleteOpen(true)} className="rounded-md border border-[#f1c8c3] bg-white px-3 py-2 text-[13px] font-medium text-[#a8342a] transition hover:bg-[#fff4f2]">Delete workspace</button></SettingsRow></div></section>
           </div>
 
-          <div className="mt-10 flex items-center justify-end gap-3 border-t border-[#e8e7e4] pt-5"><span className="mr-auto text-xs text-[#787774]" aria-live="polite">{saved ? "Changes saved" : ""}</span><button type="button" onClick={() => { setName("Alex Rivera"); setWorkspaceName("Personal workspace"); setProfileImage(null); }} className="rounded-md px-3 py-2 text-[13px] font-medium text-[#625f5c] transition hover:bg-[#ececea]">Reset</button><button type="button" onClick={saveChanges} className="rounded-md bg-[#191919] px-3.5 py-2 text-[13px] font-medium text-white transition hover:bg-[#353535] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#d9d9d7]">Save changes</button></div>
+          <div className="mt-10 flex items-center justify-end gap-3 border-t border-[#e8e7e4] pt-5"><button type="button" onClick={() => { setName("Alex Rivera"); setWorkspaceName("Personal workspace"); setProfileImage(null); }} className="mr-auto rounded-md px-3 py-2 text-[13px] font-medium text-[#625f5c] transition hover:bg-[#ececea]">Reset</button><button type="button" onClick={saveChanges} className="rounded-md bg-[#191919] px-3.5 py-2 text-[13px] font-medium text-white transition hover:bg-[#353535] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#d9d9d7]">Save changes</button></div>
         </main>
       </div>
+      {deleteOpen && <div className="fixed inset-0 z-40 grid place-items-center bg-[#191919]/20 px-5 py-8 backdrop-blur-[2px]" role="presentation"><section role="dialog" aria-modal="true" aria-labelledby="delete-workspace-title" className="w-full max-w-md rounded-xl border border-[#deddda] bg-white p-5 shadow-[0_20px_60px_rgba(0,0,0,0.18)] sm:p-6"><p className="text-xs font-semibold tracking-[0.14em] text-[#a8342a] uppercase">Permanent action</p><h2 id="delete-workspace-title" className="mt-2 text-xl font-semibold tracking-[-0.03em]">Delete “{workspaceName}”?</h2><p className="mt-3 text-sm leading-6 text-[#625f5c]">Deleting <span className="font-medium text-[#191919]">“{workspaceName}”</span> will permanently delete all workspace data, meeting reviews, and history. This cannot be undone.</p><label className="mt-5 block text-[13px] font-medium">Type <span className="font-semibold">{workspaceName}</span> to confirm<input value={confirmationName} onChange={(event) => setConfirmationName(event.target.value)} autoFocus className="mt-2 h-9 w-full rounded-md border border-[#deddda] bg-white px-3 text-[13px] font-normal outline-none transition focus:border-[#191919] focus:ring-4 focus:ring-[#e9e9e7]" /></label><div className="mt-6 flex justify-end gap-2"><button type="button" onClick={() => { setDeleteOpen(false); setConfirmationName(""); }} className="rounded-md px-3 py-2 text-[13px] font-medium text-[#625f5c] transition hover:bg-[#ececea]">Cancel</button><button type="button" disabled={confirmationName.trim() !== workspaceName} onClick={deleteWorkspace} className="rounded-md bg-[#a8342a] px-3.5 py-2 text-[13px] font-medium text-white transition hover:bg-[#8f2c23] disabled:cursor-not-allowed disabled:opacity-40">Delete workspace</button></div></section></div>}
     </div>
   );
 }

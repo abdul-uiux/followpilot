@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { Suspense, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { AppSidebar } from "../components/app-sidebar";
 
 type Meeting = {
@@ -83,6 +84,22 @@ const meetings: Meeting[] = [
   },
 ];
 
+const sampleMeeting: Meeting = {
+  id: "acme-demo",
+  title: "Product demo follow-up",
+  company: "Acme Co.",
+  date: "Today",
+  time: "11:30 AM",
+  duration: "34 min",
+  attendees: "Taylor Brooks, Jordan Lee",
+  status: "Ready to review",
+  summary: "A product demo with clear interest in team reporting, onboarding support, and a follow-up with the operations lead.",
+  updates: ["3 suggested updates", "1 follow-up owner"],
+  detail: "The customer wants to evaluate the reporting workflow with their operations team. FollowPilot prepared the next step, buyer notes, and a proposed follow-up date for review.",
+  sortDate: 20260808,
+  period: "This week",
+};
+
 const statusStyles: Record<Meeting["status"], string> = {
   "Needs decision": "border-amber-200 bg-amber-50 text-amber-800",
   "Ready to review": "border-blue-200 bg-blue-50 text-blue-800",
@@ -144,17 +161,19 @@ function MeetingCard({ meeting, isOpen, onToggle }: { meeting: Meeting; isOpen: 
   );
 }
 
-export default function MeetingsPage() {
+function MeetingsContent() {
+  const isSampleView = useSearchParams().get("sample") === "1";
+  const meetingSource = useMemo(() => isSampleView ? [sampleMeeting] : meetings, [isSampleView]);
   const [filter, setFilter] = useState<"all" | "needs-decision" | "completed">("all");
   const [sort, setSort] = useState<"recent" | "oldest" | "status">("recent");
   const [sortMenuOpen, setSortMenuOpen] = useState(false);
-  const [openMeetingId, setOpenMeetingId] = useState<string | null>("northstar");
+  const [openMeetingId, setOpenMeetingId] = useState<string | null>(() => isSampleView ? sampleMeeting.id : "northstar");
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
   const visibleMeetings = useMemo(() => {
     const normalizedQuery = searchQuery.trim().toLowerCase();
-    const filtered = meetings.filter((meeting) => {
+    const filtered = meetingSource.filter((meeting) => {
       const matchesFilter = filter === "all" ? true : filter === "needs-decision" ? meeting.status === "Needs decision" : meeting.status === "Completed";
       const matchesSearch = !normalizedQuery || [meeting.company, meeting.title, meeting.attendees, meeting.summary].some((value) => value.toLowerCase().includes(normalizedQuery));
       return matchesFilter && matchesSearch;
@@ -166,7 +185,7 @@ export default function MeetingsPage() {
       if (sort === "status") return statusRank[a.status] - statusRank[b.status] || b.sortDate - a.sortDate;
       return b.sortDate - a.sortDate;
     });
-  }, [filter, searchQuery, sort]);
+  }, [filter, meetingSource, searchQuery, sort]);
 
   const filters: Array<{ key: typeof filter; label: string }> = [
     { key: "all", label: "All meetings" },
@@ -190,7 +209,7 @@ export default function MeetingsPage() {
         <main className="mx-auto max-w-6xl px-5 py-10 sm:px-8 lg:py-14">
           <div className="flex flex-col justify-between gap-6 sm:flex-row sm:items-end">
             <div><p className="text-xs font-semibold tracking-[0.14em] text-[#787774] uppercase">Review archive</p><h1 className="mt-2 text-3xl font-semibold tracking-[-0.04em] sm:text-4xl">Every customer conversation,<br className="hidden sm:block" /> ready to pick back up.</h1><p className="mt-3 max-w-xl text-sm leading-6 text-[#625f5c]">Open a meeting to revisit its CRM decisions, evidence, and review outcome without reopening the whole workflow.</p></div>
-            <div className="grid grid-cols-2 divide-x divide-[#deddda] rounded-xl border border-[#deddda] bg-white"><div className="px-4 py-3"><p className="text-2xl font-semibold">{visibleMeetings.length}</p><p className="mt-0.5 text-xs text-[#787774]">{filter === "all" ? "past meetings" : "matching meetings"}</p></div><div className="px-4 py-3"><p className="text-2xl font-semibold text-amber-700">{meetings.filter((meeting) => meeting.status === "Needs decision").length}</p><p className="mt-0.5 text-xs text-[#787774]">needs decision</p></div></div>
+            <div className="grid grid-cols-2 divide-x divide-[#deddda] rounded-xl border border-[#deddda] bg-white"><div className="px-4 py-3"><p className="text-2xl font-semibold">{visibleMeetings.length}</p><p className="mt-0.5 text-xs text-[#787774]">{isSampleView ? "sample meeting" : filter === "all" ? "past meetings" : "matching meetings"}</p></div><div className="px-4 py-3"><p className="text-2xl font-semibold text-amber-700">{meetingSource.filter((meeting) => meeting.status === "Needs decision").length}</p><p className="mt-0.5 text-xs text-[#787774]">needs decision</p></div></div>
           </div>
           <div className="mt-9 flex flex-col gap-3 border-y border-[#e8e7e4] py-3 sm:flex-row sm:items-center sm:justify-between"><div role="group" aria-label="Filter meetings" className="flex flex-wrap gap-2">{filters.map((item) => <button key={item.key} type="button" aria-pressed={filter === item.key} onClick={() => { setFilter(item.key); setOpenMeetingId(null); }} className={filter === item.key ? "rounded-md bg-[#191919] px-3 py-1.5 text-xs font-semibold text-white" : "rounded-md px-3 py-1.5 text-xs font-medium text-[#625f5c] transition hover:bg-[#ececea] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#e9e9e7]"}>{item.label}</button>)}</div><div className="relative"><button type="button" aria-haspopup="menu" aria-expanded={sortMenuOpen} aria-controls="meeting-sort-options" onClick={() => setSortMenuOpen((open) => !open)} className="flex items-center gap-2 rounded-md border border-[#deddda] bg-white px-3 py-1.5 text-xs font-medium text-[#52504d] transition hover:border-[#9b9995] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#e9e9e7]"><span className="text-[#787774]">Sort</span>{activeSortLabel}<ChevronIcon /></button>{sortMenuOpen && <div id="meeting-sort-options" role="menu" className="absolute right-0 z-10 mt-2 w-40 overflow-hidden rounded-lg border border-[#deddda] bg-white p-1 shadow-lg">{sortOptions.map((option) => <button key={option.key} type="button" role="menuitemradio" aria-checked={sort === option.key} onClick={() => { setSort(option.key); setSortMenuOpen(false); setOpenMeetingId(null); }} className={sort === option.key ? "flex w-full items-center justify-between rounded-md bg-[#efefed] px-3 py-2 text-left text-xs font-semibold text-[#191919]" : "flex w-full items-center rounded-md px-3 py-2 text-left text-xs text-[#625f5c] hover:bg-[#f5f5f3]"}>{option.label}{sort === option.key && <span aria-hidden="true">✓</span>}</button>)}</div>}</div></div>
           <section aria-label="Past meetings" className="mt-5 space-y-5">{visibleMeetings.length ? visiblePeriods.map((period) => { const periodMeetings = visibleMeetings.filter((meeting) => meeting.period === period); return <div key={period} className="space-y-3"><p className="px-1 text-[10px] font-semibold tracking-[0.12em] text-[#787774] uppercase">{period}</p>{periodMeetings.map((meeting) => <MeetingCard key={meeting.id} meeting={meeting} isOpen={openMeetingId === meeting.id} onToggle={(open) => setOpenMeetingId(open ? meeting.id : null)} />)}</div>; }) : <div className="rounded-2xl border border-dashed border-[#c9c8c5] bg-white px-6 py-12 text-center"><p className="text-sm font-semibold text-[#191919]">No meetings match this filter or search.</p><button type="button" onClick={() => { setFilter("all"); setSearchQuery(""); }} className="mt-3 text-[13px] font-medium underline underline-offset-4">Clear filters</button></div>}</section>
@@ -198,4 +217,8 @@ export default function MeetingsPage() {
       </div>
     </div>
   );
+}
+
+export default function MeetingsPage() {
+  return <Suspense fallback={<main className="min-h-screen bg-[#f7f7f5]" />}><MeetingsContent /></Suspense>;
 }
