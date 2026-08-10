@@ -2,8 +2,10 @@
 
 import { type ChangeEvent, type FormEvent, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { createUserWithEmailAndPassword, GoogleAuthProvider, onAuthStateChanged, signInWithEmailAndPassword, signInWithPopup, updateProfile } from "firebase/auth";
 import { AppSidebar } from "./components/app-sidebar";
 import { useToast } from "./components/toast-provider";
+import { firebaseAuth, firebaseIsConfigured } from "./lib/firebase";
 import {
   fieldKeys,
   type AuditEntry,
@@ -34,8 +36,6 @@ type MatchedContact = {
   name: string;
   deals: Array<{ id: string; name: string; stage: string; amount: string; closeDate: string; updatedAt: string }>;
 };
-
-const authSessionKey = "followpilot-demo-authenticated";
 
 const fieldLabels: Record<FieldKey, string> = {
   deal_stage: "Deal stage",
@@ -123,6 +123,17 @@ function SparkIcon({ className = "h-4 w-4" }: { className?: string }) {
   );
 }
 
+function GoogleIcon() {
+  return (
+    <svg className="h-[18px] w-[18px]" viewBox="0 0 24 24" aria-hidden="true">
+      <path fill="#4285F4" d="M21.8 12.23c0-.71-.06-1.39-.19-2.03H12v3.84h5.49a4.7 4.7 0 0 1-2.03 3.08v2.49h3.29c1.93-1.78 3.05-4.4 3.05-7.38Z" />
+      <path fill="#34A853" d="M12 22c2.75 0 5.06-.91 6.75-2.39l-3.29-2.49c-.91.61-2.08.97-3.46.97-2.65 0-4.89-1.79-5.69-4.2H2.91v2.57A10.2 10.2 0 0 0 12 22Z" />
+      <path fill="#FBBC05" d="M6.31 13.89A6.13 6.13 0 0 1 6 12c0-.66.11-1.3.31-1.89V7.54H2.91A10.2 10.2 0 0 0 1.8 12c0 1.64.39 3.2 1.11 4.46l3.4-2.57Z" />
+      <path fill="#EA4335" d="M12 5.91c1.5 0 2.84.52 3.9 1.54l2.93-2.93C17.06 2.88 14.75 2 12 2a10.2 10.2 0 0 0-9.09 5.54l3.4 2.57c.8-2.41 3.04-4.2 5.69-4.2Z" />
+    </svg>
+  );
+}
+
 function AuthScreen({
   mode,
   onModeChange,
@@ -132,11 +143,54 @@ function AuthScreen({
   onModeChange: (mode: "sign-in" | "sign-up") => void;
   onAuthenticated: (signedUp: boolean) => void;
 }) {
+  const [authError, setAuthError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    onAuthenticated(signingUp);
+    if (!firebaseAuth) {
+      setAuthError("Firebase Authentication is not configured yet.");
+      return;
+    }
+    const form = new FormData(event.currentTarget);
+    const email = String(form.get("email") ?? "").trim();
+    const password = String(form.get("password") ?? "");
+    const name = String(form.get("name") ?? "").trim();
+    setAuthError(null);
+    setIsSubmitting(true);
+    void (async () => {
+      try {
+        if (signingUp) {
+          const credential = await createUserWithEmailAndPassword(firebaseAuth, email, password);
+          if (name) await updateProfile(credential.user, { displayName: name });
+        } else {
+          await signInWithEmailAndPassword(firebaseAuth, email, password);
+        }
+        onAuthenticated(signingUp);
+      } catch (error) {
+        setAuthError(error instanceof Error ? error.message.replace("Firebase: ", "") : "Authentication could not be completed.");
+      } finally {
+        setIsSubmitting(false);
+      }
+    })();
   };
   const signingUp = mode === "sign-up";
+
+  const continueWithGoogle = async () => {
+    if (!firebaseAuth) {
+      setAuthError("Firebase Authentication is not configured yet.");
+      return;
+    }
+    setAuthError(null);
+    setIsSubmitting(true);
+    try {
+      await signInWithPopup(firebaseAuth, new GoogleAuthProvider());
+      onAuthenticated(signingUp);
+    } catch (error) {
+      setAuthError(error instanceof Error ? error.message.replace("Firebase: ", "") : "Google sign-in could not be completed.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <main className="min-h-screen bg-[#fbfbfa] text-[#191919]">
@@ -150,16 +204,17 @@ function AuthScreen({
           <h1 className="mt-2 text-3xl font-semibold tracking-[-0.035em]">{signingUp ? "Start reviewing with confidence." : "Sign in to FollowPilot."}</h1>
           <p className="mt-3 max-w-sm text-sm leading-6 text-[#625f5c]">{signingUp ? "Create your personal workspace in a few seconds. No CRM connection is required for this fixture demo." : "Pick up your meeting reviews, then decide exactly what should change in your CRM."}</p>
           <form onSubmit={submit} className="mt-8 space-y-4">
-            {signingUp && <label className="block text-sm font-medium">Your name<input required placeholder="Alex Rivera" className="mt-2 w-full rounded-lg border border-[#deddda] bg-white px-3 py-2.5 text-sm outline-none transition placeholder:text-[#9b9995] focus:border-[#191919] focus:ring-4 focus:ring-[#e9e9e7]" /></label>}
-            <label className="block text-sm font-medium">Work email<input required type="email" placeholder="you@company.com" className="mt-2 w-full rounded-lg border border-[#deddda] bg-white px-3 py-2.5 text-sm outline-none transition placeholder:text-[#9b9995] focus:border-[#191919] focus:ring-4 focus:ring-[#e9e9e7]" /></label>
+            {signingUp && <label className="block text-sm font-medium">Your name<input name="name" required placeholder="Alex Rivera" className="mt-2 w-full rounded-lg border border-[#deddda] bg-white px-3 py-2.5 text-sm outline-none transition placeholder:text-[#9b9995] focus:border-[#191919] focus:ring-4 focus:ring-[#e9e9e7]" /></label>}
+            <label className="block text-sm font-medium">Work email<input name="email" required type="email" placeholder="you@company.com" className="mt-2 w-full rounded-lg border border-[#deddda] bg-white px-3 py-2.5 text-sm outline-none transition placeholder:text-[#9b9995] focus:border-[#191919] focus:ring-4 focus:ring-[#e9e9e7]" /></label>
             {signingUp && <label className="block text-sm font-medium">Workspace name<input required placeholder="Acme sales" className="mt-2 w-full rounded-lg border border-[#deddda] bg-white px-3 py-2.5 text-sm outline-none transition placeholder:text-[#9b9995] focus:border-[#191919] focus:ring-4 focus:ring-[#e9e9e7]" /></label>}
-            {!signingUp && <label className="block text-sm font-medium">Password<input required type="password" placeholder="••••••••" className="mt-2 w-full rounded-lg border border-[#deddda] bg-white px-3 py-2.5 text-sm outline-none transition placeholder:text-[#9b9995] focus:border-[#191919] focus:ring-4 focus:ring-[#e9e9e7]" /></label>}
-            <button type="submit" className="mt-2 flex w-full items-center justify-center rounded-lg bg-[#191919] px-4 py-2.5 text-sm font-medium text-white transition hover:bg-[#353535] focus:outline-none focus:ring-4 focus:ring-[#d9d9d7]">{signingUp ? "Create workspace" : "Sign in"}</button>
+            <label className="block text-sm font-medium">Password<input name="password" required minLength={6} type="password" placeholder="At least 6 characters" className="mt-2 w-full rounded-lg border border-[#deddda] bg-white px-3 py-2.5 text-sm outline-none transition placeholder:text-[#9b9995] focus:border-[#191919] focus:ring-4 focus:ring-[#e9e9e7]" /></label>
+            {authError && <p role="alert" className="text-xs leading-5 text-[#a8342a]">{authError}</p>}
+            <button type="submit" disabled={isSubmitting || !firebaseIsConfigured()} className="mt-2 flex w-full items-center justify-center rounded-lg bg-[#191919] px-4 py-2.5 text-sm font-medium text-white transition hover:bg-[#353535] focus:outline-none focus:ring-4 focus:ring-[#d9d9d7] disabled:opacity-45">{isSubmitting ? "Please wait…" : signingUp ? "Create workspace" : "Sign in"}</button>
           </form>
           <div className="my-6 flex items-center gap-3 text-xs text-[#9b9995]"><span className="h-px flex-1 bg-[#e8e7e4]" />or<span className="h-px flex-1 bg-[#e8e7e4]" /></div>
-          <button type="button" onClick={() => onAuthenticated(signingUp)} className="flex w-full items-center justify-center gap-2 rounded-lg border border-[#deddda] bg-white px-4 py-2.5 text-sm font-medium transition hover:bg-[#f7f7f5] focus:outline-none focus:ring-4 focus:ring-[#e9e9e7]"><span className="text-base">G</span> Continue with Google</button>
+          <button type="button" onClick={() => void continueWithGoogle()} disabled={isSubmitting || !firebaseIsConfigured()} className="flex w-full items-center justify-center gap-2 rounded-lg border border-[#deddda] bg-white px-4 py-2.5 text-sm font-medium transition hover:bg-[#f7f7f5] focus:outline-none focus:ring-4 focus:ring-[#e9e9e7] disabled:opacity-45"><GoogleIcon /> Continue with Google</button>
           <p className="mt-7 text-center text-sm text-[#625f5c]">{signingUp ? "Already have a workspace?" : "New to FollowPilot?"} <button type="button" onClick={() => onModeChange(signingUp ? "sign-in" : "sign-up")} className="font-medium text-[#191919] underline underline-offset-4">{signingUp ? "Sign in" : "Create one"}</button></p>
-          <p className="mt-8 text-center text-xs leading-5 text-[#9b9995]">Demo authentication only. Connect a real identity provider before production.</p>
+          {!firebaseIsConfigured() && <p className="mt-8 text-center text-xs leading-5 text-[#a8342a]">Add your Firebase web-app settings to <code>.env.local</code> to enable sign-in.</p>}
         </div>
       </section>
     </main>
@@ -572,9 +627,8 @@ export default function FollowPilotReview({
 }) {
   const { showToast } = useToast();
   const router = useRouter();
-  const [isAuthenticated, setIsAuthenticated] = useState(
-    () => typeof window !== "undefined" && window.sessionStorage.getItem(authSessionKey) === "true",
-  );
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [authLoading, setAuthLoading] = useState(() => firebaseAuth !== null);
   const [isOnboarding, setIsOnboarding] = useState(showOnboarding);
   const [authMode, setAuthMode] = useState<"sign-in" | "sign-up">("sign-in");
   const [step, setStep] = useState<FlowStep>("dashboard");
@@ -618,10 +672,19 @@ export default function FollowPilotReview({
   const [audit, setAudit] = useState<AuditEntry[]>([]);
 
   const completeAuthentication = (signedUp: boolean) => {
-    window.sessionStorage.setItem(authSessionKey, "true");
     setIsAuthenticated(true);
     if (signedUp) router.push("/onboarding");
   };
+
+  useEffect(() => {
+    if (!firebaseAuth) {
+      return;
+    }
+    return onAuthStateChanged(firebaseAuth, (user) => {
+      setIsAuthenticated(Boolean(user));
+      setAuthLoading(false);
+    });
+  }, []);
 
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -838,6 +901,10 @@ export default function FollowPilotReview({
       setIsApplying(false);
     }
   };
+
+  if (authLoading) {
+    return <main className="grid min-h-screen place-items-center bg-[#fbfbfa] text-sm text-[#787774]">Loading workspace…</main>;
+  }
 
   if (!isAuthenticated) {
     return <AuthScreen mode={authMode} onModeChange={setAuthMode} onAuthenticated={completeAuthentication} />;
