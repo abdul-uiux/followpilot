@@ -1,14 +1,14 @@
 import Link from "next/link";
 
 type AppSidebarProps = {
-  activePage: "home" | "meetings" | "settings";
+  activePage: "home" | "meetings" | "integrations" | "settings";
   onNewMeeting?: () => void;
 };
 
 const navItems = [
   { key: "home", label: "Home", href: "/", icon: "/figma-icons/home.svg" },
   { key: "meetings", label: "Meetings", href: "/meetings", icon: "/figma-icons/folder-clock.svg" },
-  { key: "integrations", label: "Integrations", href: "#integrations", icon: "/figma-icons/puzzle.svg" },
+  { key: "integrations", label: "Integrations", href: "/integrations", icon: "/figma-icons/puzzle.svg" },
   { key: "settings", label: "Settings", href: "/settings", icon: "/figma-icons/settings.svg" },
 ] as const;
 
