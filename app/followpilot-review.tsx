@@ -2,10 +2,12 @@
 
 import { type ChangeEvent, type FormEvent, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { createUserWithEmailAndPassword, GoogleAuthProvider, onAuthStateChanged, signInWithEmailAndPassword, signInWithPopup, updateProfile } from "firebase/auth";
+import { createUserWithEmailAndPassword, GoogleAuthProvider, signInWithEmailAndPassword, signInWithPopup, updateProfile } from "firebase/auth";
 import { AppSidebar } from "./components/app-sidebar";
+import { AccountMenu } from "./components/account-menu";
 import { useToast } from "./components/toast-provider";
 import { firebaseAuth, firebaseIsConfigured } from "./lib/firebase";
+import { useAuth } from "./components/auth-provider";
 import {
   fieldKeys,
   type AuditEntry,
@@ -203,8 +205,8 @@ function AuthScreen({
           <p className="text-sm font-medium text-[#787774]">{signingUp ? "Create a workspace" : "Welcome back"}</p>
           <h1 className="mt-2 text-3xl font-semibold tracking-[-0.035em]">{signingUp ? "Start reviewing with confidence." : "Sign in to FollowPilot."}</h1>
           <p className="mt-3 max-w-sm text-sm leading-6 text-[#625f5c]">{signingUp ? "Create your personal workspace in a few seconds. No CRM connection is required for this fixture demo." : "Pick up your meeting reviews, then decide exactly what should change in your CRM."}</p>
-          <form onSubmit={submit} className="mt-8 space-y-4">
-            {signingUp && <label className="block text-sm font-medium">Your name<input name="name" required placeholder="Alex Rivera" className="mt-2 w-full rounded-lg border border-[#deddda] bg-white px-3 py-2.5 text-sm outline-none transition placeholder:text-[#9b9995] focus:border-[#191919] focus:ring-4 focus:ring-[#e9e9e7]" /></label>}
+          <form key={mode} onSubmit={submit} className="mt-8 space-y-4">
+            {signingUp && <label className="block text-sm font-medium">Your name<input name="name" required placeholder="Your name" className="mt-2 w-full rounded-lg border border-[#deddda] bg-white px-3 py-2.5 text-sm outline-none transition placeholder:text-[#9b9995] focus:border-[#191919] focus:ring-4 focus:ring-[#e9e9e7]" /></label>}
             <label className="block text-sm font-medium">Work email<input name="email" required type="email" placeholder="you@company.com" className="mt-2 w-full rounded-lg border border-[#deddda] bg-white px-3 py-2.5 text-sm outline-none transition placeholder:text-[#9b9995] focus:border-[#191919] focus:ring-4 focus:ring-[#e9e9e7]" /></label>
             {signingUp && <label className="block text-sm font-medium">Workspace name<input required placeholder="Acme sales" className="mt-2 w-full rounded-lg border border-[#deddda] bg-white px-3 py-2.5 text-sm outline-none transition placeholder:text-[#9b9995] focus:border-[#191919] focus:ring-4 focus:ring-[#e9e9e7]" /></label>}
             <label className="block text-sm font-medium">Password<input name="password" required minLength={6} type="password" placeholder="At least 6 characters" className="mt-2 w-full rounded-lg border border-[#deddda] bg-white px-3 py-2.5 text-sm outline-none transition placeholder:text-[#9b9995] focus:border-[#191919] focus:ring-4 focus:ring-[#e9e9e7]" /></label>
@@ -213,7 +215,7 @@ function AuthScreen({
           </form>
           <div className="my-6 flex items-center gap-3 text-xs text-[#9b9995]"><span className="h-px flex-1 bg-[#e8e7e4]" />or<span className="h-px flex-1 bg-[#e8e7e4]" /></div>
           <button type="button" onClick={() => void continueWithGoogle()} disabled={isSubmitting || !firebaseIsConfigured()} className="flex w-full items-center justify-center gap-2 rounded-lg border border-[#deddda] bg-white px-4 py-2.5 text-sm font-medium transition hover:bg-[#f7f7f5] focus:outline-none focus:ring-4 focus:ring-[#e9e9e7] disabled:opacity-45"><GoogleIcon /> Continue with Google</button>
-          <p className="mt-7 text-center text-sm text-[#625f5c]">{signingUp ? "Already have a workspace?" : "New to FollowPilot?"} <button type="button" onClick={() => onModeChange(signingUp ? "sign-in" : "sign-up")} className="font-medium text-[#191919] underline underline-offset-4">{signingUp ? "Sign in" : "Create one"}</button></p>
+          <p className="mt-7 text-center text-sm text-[#625f5c]">{signingUp ? "Already have a workspace?" : "New to FollowPilot?"} <button type="button" onClick={() => { setAuthError(null); onModeChange(signingUp ? "sign-in" : "sign-up"); }} className="font-medium text-[#191919] underline underline-offset-4">{signingUp ? "Sign in" : "Create one"}</button></p>
           {!firebaseIsConfigured() && <p className="mt-8 text-center text-xs leading-5 text-[#a8342a]">Add your Firebase web-app settings to <code>.env.local</code> to enable sign-in.</p>}
         </div>
       </section>
@@ -627,8 +629,8 @@ export default function FollowPilotReview({
 }) {
   const { showToast } = useToast();
   const router = useRouter();
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [authLoading, setAuthLoading] = useState(() => firebaseAuth !== null);
+  const { user, loading: authLoading, displayName } = useAuth();
+  const isAuthenticated = Boolean(user);
   const [isOnboarding, setIsOnboarding] = useState(showOnboarding);
   const [authMode, setAuthMode] = useState<"sign-in" | "sign-up">("sign-in");
   const [step, setStep] = useState<FlowStep>("dashboard");
@@ -672,19 +674,8 @@ export default function FollowPilotReview({
   const [audit, setAudit] = useState<AuditEntry[]>([]);
 
   const completeAuthentication = (signedUp: boolean) => {
-    setIsAuthenticated(true);
     if (signedUp) router.push("/onboarding");
   };
-
-  useEffect(() => {
-    if (!firebaseAuth) {
-      return;
-    }
-    return onAuthStateChanged(firebaseAuth, (user) => {
-      setIsAuthenticated(Boolean(user));
-      setAuthLoading(false);
-    });
-  }, []);
 
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -914,9 +905,9 @@ export default function FollowPilotReview({
     <AppShell onNewMeeting={() => hubSpotConnection.connected ? setUploadOpen(true) : router.push("/onboarding")}>
       <main id="workspace" className="min-h-screen">
         <header className="flex h-14 items-center justify-between border-b border-[#e8e7e4] bg-[#fbfbfa] px-5 sm:px-7">
-          <div className="flex items-center gap-3"><div className="grid h-7 w-7 place-items-center rounded-md bg-[#191919] text-xs font-bold text-white lg:hidden">F</div><div><p className="text-sm font-medium">{step === "dashboard" ? "Home" : meetingTitle || "Meeting analysis"}</p><p className="text-[11px] text-[#787774]">Personal workspace</p></div></div>
+          <div className="flex items-center gap-3"><div className="grid h-7 w-7 place-items-center rounded-md bg-[#191919] text-xs font-bold text-white lg:hidden">F</div><div><p className="text-sm font-medium">{step === "dashboard" ? "Home" : meetingTitle || "Meeting analysis"}</p><p className="text-[11px] text-[#787774]">Your workspace</p></div></div>
           <button type="button" onClick={() => setUploadOpen(true)} className="inline-flex items-center gap-2 rounded-md bg-[#191919] px-3 py-2 text-sm font-medium text-white transition hover:bg-[#353535] lg:hidden"><span className="text-base leading-none">+</span> New</button>
-          <div className="hidden items-center gap-3 sm:flex"><button type="button" className="grid h-8 w-8 place-items-center rounded-md text-[#787774] transition hover:bg-[#efefed]" aria-label="Notifications">◌</button><div className="h-6 w-px bg-[#e8e7e4]" /><div className="grid h-7 w-7 place-items-center rounded-full bg-[#e8e7e4] text-[10px] font-semibold">AR</div></div>
+          <div className="hidden items-center gap-3 sm:flex"><button type="button" className="grid h-8 w-8 place-items-center rounded-md text-[#787774] transition hover:bg-[#efefed]" aria-label="Notifications">◌</button><AccountMenu /></div>
         </header>
 
         <UploadModal open={uploadOpen} onClose={() => setUploadOpen(false)} onAnalyze={analyzeMeeting} transcript={transcript} setTranscript={setTranscript} meetingTitle={meetingTitle} setMeetingTitle={setMeetingTitle} attendees={attendees} setAttendees={setAttendees} about={meetingAbout} setAbout={setMeetingAbout} fileName={uploadedFileName} onFile={handleTranscriptFile} authorized={authorizedToShare} setAuthorized={setAuthorizedToShare} isAnalyzing={isAnalyzing} contactEmail={contactEmail} setContactEmail={setContactEmail} matchedContact={matchedContact} selectedDealId={selectedDealId} setSelectedDealId={setSelectedDealId} onFindContact={() => void findContact()} isMatchingContact={isMatchingContact} />
@@ -925,7 +916,7 @@ export default function FollowPilotReview({
           <div className="mx-auto flex min-h-[calc(100vh-3.5rem)] max-w-5xl items-center px-5 py-10 sm:px-8 lg:py-14">
             <section className="w-full overflow-hidden rounded-2xl border border-[#deddda] bg-white shadow-[0_1px_2px_rgba(0,0,0,0.03)]">
               <div className="grid gap-8 p-6 sm:p-10 lg:grid-cols-[minmax(0,1fr)_240px] lg:items-end">
-                <div className="max-w-xl"><div className="grid h-11 w-11 place-items-center rounded-xl bg-[#191919] text-white"><SparkIcon className="h-5 w-5" /></div><p className="mt-6 text-xs font-semibold tracking-[0.14em] text-[#787774] uppercase">Set up your workspace</p><h1 className="mt-2 text-3xl font-semibold tracking-[-0.04em] sm:text-4xl">Connect HubSpot before your first review.</h1><p className="mt-3 text-sm leading-6 text-[#625f5c]">FollowPilot needs a connected CRM to match each meeting and keep all proposed changes in your review queue.</p><div className="mt-6 flex flex-wrap items-center gap-2">{hubSpotConnection.connected ? <button type="button" onClick={() => { setIsOnboarding(false); router.push("/"); }} className="inline-flex items-center gap-2 rounded-md bg-[#191919] px-3.5 py-2.5 text-[13px] font-medium text-white transition hover:bg-[#353535]"><CheckIcon /> Start reviewing</button> : <button type="button" onClick={() => { window.location.assign("/api/hubspot/connect?returnTo=/onboarding"); }} disabled={connectionLoading || !hubSpotConnection.configured} className="inline-flex items-center gap-2 rounded-md bg-[#191919] px-3.5 py-2.5 text-[13px] font-medium text-white transition hover:bg-[#353535] disabled:opacity-45"><span className="text-base leading-none">+</span> {connectionLoading ? "Checking connection…" : "Connect HubSpot"}</button>}<button type="button" onClick={startSampleReview} className="rounded-md border border-[#deddda] bg-white px-3.5 py-2.5 text-[13px] font-medium text-[#52504d] transition hover:border-[#9b9995] hover:text-[#191919]">View a test meeting</button></div>{!connectionLoading && !hubSpotConnection.configured && <p className="mt-3 text-xs text-[#a8342a]">HubSpot OAuth needs to be configured for this workspace.</p>}</div>
+                <div className="max-w-xl"><div className="grid h-11 w-11 place-items-center rounded-xl bg-[#191919] text-white"><SparkIcon className="h-5 w-5" /></div><p className="mt-6 text-xs font-semibold tracking-[0.14em] text-[#787774] uppercase">Set up your workspace</p><h1 className="mt-2 text-3xl font-semibold tracking-[-0.04em] sm:text-4xl">Connect HubSpot before your first review.</h1><p className="mt-3 text-sm leading-6 text-[#625f5c]">FollowPilot checks your HubSpot connection on the server before a review can start. Tokens are encrypted and stored in this browser.</p><div className="mt-6 flex flex-wrap items-center gap-2">{hubSpotConnection.connected ? <><span className="inline-flex items-center gap-2 rounded-md bg-[#ebf5ed] px-3.5 py-2.5 text-[13px] font-medium text-[#2e6b43]"><CheckIcon /> HubSpot connected</span><button type="button" onClick={() => { window.open("/api/hubspot/connect?returnTo=/onboarding", "_blank", "noopener,noreferrer"); }} className="rounded-md border border-[#deddda] bg-white px-3.5 py-2.5 text-[13px] font-medium text-[#52504d] transition hover:border-[#9b9995] hover:text-[#191919]">Reconnect HubSpot</button><button type="button" onClick={() => { setIsOnboarding(false); router.push("/"); }} className="rounded-md bg-[#191919] px-3.5 py-2.5 text-[13px] font-medium text-white transition hover:bg-[#353535]">Continue</button></> : <button type="button" onClick={() => { window.open("/api/hubspot/connect?returnTo=/onboarding", "_blank", "noopener,noreferrer"); }} disabled={connectionLoading || !hubSpotConnection.configured} className="inline-flex items-center gap-2 rounded-md bg-[#191919] px-3.5 py-2.5 text-[13px] font-medium text-white transition hover:bg-[#353535] disabled:opacity-45"><span className="text-base leading-none">+</span> {connectionLoading ? "Checking connection…" : "Connect HubSpot"}</button>}<button type="button" onClick={startSampleReview} className="rounded-md border border-[#deddda] bg-white px-3.5 py-2.5 text-[13px] font-medium text-[#52504d] transition hover:border-[#9b9995] hover:text-[#191919]">View a test meeting</button></div>{!connectionLoading && !hubSpotConnection.configured && <p className="mt-3 text-xs text-[#a8342a]">HubSpot OAuth needs to be configured for this workspace.</p>}</div>
                 <div className="rounded-xl border border-[#ececea] bg-[#fafaf9] p-5"><p className="text-[11px] font-semibold tracking-[0.12em] text-[#787774] uppercase">How it works</p><ol className="mt-4 space-y-4">{["Connect HubSpot", "Add a meeting transcript", "Review only approved changes"].map((item, index) => <li key={item} className="flex gap-3 text-xs leading-5 text-[#625f5c]"><span className="grid h-5 w-5 shrink-0 place-items-center rounded-full border border-[#deddda] bg-white text-[10px] font-semibold text-[#52504d]">{index + 1}</span>{item}</li>)}</ol></div>
               </div>
               <div className="border-t border-[#ececea] bg-[#fafaf9] px-6 py-3 text-xs text-[#787774] sm:px-10">Without HubSpot, you can still explore the sample meeting in Meetings.</div>
@@ -935,13 +926,13 @@ export default function FollowPilotReview({
 
         {step === "dashboard" && !isOnboarding && (
           <div className="mx-auto max-w-5xl px-5 py-10 sm:px-8 lg:py-14">
-            <div className="max-w-2xl"><h1 className="text-2xl font-semibold tracking-[-0.03em] sm:text-[28px]">Good morning, Alex</h1><p className="mt-2 text-sm leading-6 text-[#625f5c]">Paste a customer-call transcript and FollowPilot will prepare the CRM review for you.</p></div>
+            <div className="max-w-2xl"><h1 className="text-2xl font-semibold tracking-[-0.03em] sm:text-[28px]">Good morning, {displayName}</h1><p className="mt-2 text-sm leading-6 text-[#625f5c]">Paste a customer-call transcript and FollowPilot will prepare the CRM review for you.</p></div>
             {!hubSpotConnection.connected ? (
               <section className="mt-8 rounded-xl border border-[#deddda] bg-white p-6 shadow-[0_1px_2px_rgba(0,0,0,0.03)] sm:p-7">
                 <p className="text-xs font-semibold tracking-[0.14em] text-[#787774] uppercase">CRM required</p>
                 <h2 className="mt-2 text-xl font-semibold tracking-[-0.025em]">Connect HubSpot to start a review.</h2>
                 <p className="mt-2 max-w-xl text-sm leading-6 text-[#625f5c]">Meeting reviews are available only with a connected HubSpot account. You can still explore the sample meeting while you set up your CRM.</p>
-                <div className="mt-5 flex flex-wrap gap-2"><button type="button" onClick={() => { window.location.assign("/api/hubspot/connect?returnTo=/"); }} disabled={connectionLoading || !hubSpotConnection.configured} className="rounded-md bg-[#191919] px-3.5 py-2 text-[13px] font-medium text-white disabled:opacity-45">{connectionLoading ? "Checking HubSpot…" : "Connect HubSpot"}</button><button type="button" onClick={startSampleReview} className="rounded-md border border-[#deddda] bg-white px-3.5 py-2 text-[13px] font-medium text-[#52504d] hover:text-[#191919]">View test meeting</button></div>
+                <div className="mt-5 flex flex-wrap gap-2"><button type="button" onClick={() => { window.open("/api/hubspot/connect?returnTo=/", "_blank", "noopener,noreferrer"); }} disabled={connectionLoading || !hubSpotConnection.configured} className="rounded-md bg-[#191919] px-3.5 py-2 text-[13px] font-medium text-white disabled:opacity-45">{connectionLoading ? "Checking HubSpot…" : "Connect HubSpot"}</button><button type="button" onClick={startSampleReview} className="rounded-md border border-[#deddda] bg-white px-3.5 py-2 text-[13px] font-medium text-[#52504d] hover:text-[#191919]">View test meeting</button></div>
               </section>
             ) : (
               <section className="mt-8 rounded-xl border border-[#deddda] bg-white p-4 shadow-[0_1px_2px_rgba(0,0,0,0.03)] sm:p-5"><textarea aria-label="Paste a meeting transcript" value={transcript} onChange={(event) => setTranscript(event.target.value)} placeholder="Paste the meeting transcript here…" className="min-h-52 w-full resize-y border-0 bg-transparent p-1 text-sm leading-6 outline-none placeholder:text-[#9b9995]" /><div className="mt-3 flex flex-col gap-3 border-t border-[#ececea] pt-3 sm:flex-row sm:items-center sm:justify-between"><p className="text-xs text-[#787774]">{matchedContact ? `Matched to ${matchedContact.name} · ${matchedContact.deals.find((deal) => deal.id === selectedDealId)?.name ?? "Select a deal"}` : transcript.trim() ? "Add contact details to choose the HubSpot record" : "Paste a transcript, then add the HubSpot contact details"}</p><div className="flex flex-wrap items-center gap-2"><button type="button" onClick={() => setUploadOpen(true)} className="rounded-md px-3 py-2 text-sm font-medium text-[#625f5c] hover:bg-[#f2f2f0]">Add details</button><button type="button" onClick={() => matchedContact && selectedDealId ? void analyzeMeeting() : setUploadOpen(true)} disabled={!transcript.trim() || isAnalyzing} className="inline-flex items-center gap-2 rounded-md bg-[#191919] px-3.5 py-2 text-sm font-medium text-white transition hover:bg-[#353535] disabled:cursor-not-allowed disabled:opacity-40"><SparkIcon /> Analyze now</button></div></div></section>
