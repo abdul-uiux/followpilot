@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { ToastProvider } from "./components/toast-provider";
+import { AuthProvider } from "./components/auth-provider";
 import "./globals.css";
 
 const inter = Inter({
@@ -21,7 +22,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} h-full antialiased`}>
       <body className="min-h-full">
-        <ToastProvider>{children}</ToastProvider>
+        <AuthProvider><ToastProvider>{children}</ToastProvider></AuthProvider>
         <script src="https://mcp.figma.com/mcp/html-to-design/capture.js" async></script>
       </body>
     </html>
