@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import type { FieldKey } from "../../../followpilot-types";
 import { hubSpotFetch, hubSpotTokensFromRequest } from "../../../lib/hubspot";
-import { dateToHubSpotTimestamp, getDealPipeline } from "../../../lib/review-test";
+import { dateToHubSpotTimestamp, findContactByEmail, getDealPipeline } from "../../../lib/review-test";
 
 export const runtime = "nodejs";
 
@@ -20,11 +20,14 @@ function asChanges(value: unknown): Change[] {
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json() as { dealId?: unknown; changes?: unknown };
+    const body = await request.json() as { dealId?: unknown; contactEmail?: unknown; changes?: unknown };
     const dealId = typeof body.dealId === "string" ? body.dealId : "";
+    const contactEmail = typeof body.contactEmail === "string" ? body.contactEmail : "";
     const changes = asChanges(body.changes);
-    if (!dealId || !changes.length) throw new Error("A synthetic deal and at least one approved change are required.");
+    if (!dealId || !contactEmail || !changes.length) throw new Error("A matched contact, selected deal, and at least one approved change are required.");
     const tokens = await hubSpotTokensFromRequest(request);
+    const contact = await findContactByEmail(tokens.accessToken, contactEmail);
+    if (!contact.deals.some((deal) => deal.id === dealId)) throw new Error("The selected deal is not associated with the matched HubSpot contact.");
     const pipeline = await getDealPipeline(tokens.accessToken);
     const properties: Record<string, string> = {};
     const noteChanges: Change[] = [];
@@ -56,7 +59,7 @@ export async function POST(request: NextRequest) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ properties }),
       });
-      if (!response.ok) throw new Error(`HubSpot could not update the synthetic deal (${response.status}).`);
+      if (!response.ok) throw new Error(`HubSpot could not update the selected deal (${response.status}).`);
       for (const field of changes) if (field.field !== "notes" && !results.some((result) => result.field === field.field)) results.push({ field: field.field, ok: true, message: "Applied to HubSpot." });
     }
 
@@ -72,7 +75,8 @@ export async function POST(request: NextRequest) {
       }
       const created = await note.json() as { id: string };
       const association = await hubSpotFetch(`/crm/v4/objects/notes/${created.id}/associations/default/deals/${encodeURIComponent(dealId)}`, tokens.accessToken, { method: "PUT" });
-      results.push({ field: "notes", ok: association.ok, message: association.ok ? "Note added to HubSpot." : "Note was created but could not be associated with the deal." });
+      const contactAssociation = await hubSpotFetch(`/crm/v4/objects/notes/${created.id}/associations/default/contacts/${encodeURIComponent(contact.id)}`, tokens.accessToken, { method: "PUT" });
+      results.push({ field: "notes", ok: association.ok && contactAssociation.ok, message: association.ok && contactAssociation.ok ? "Note added to the contact and deal." : "Note was created but could not be fully associated." });
     }
 
     return NextResponse.json({ results });

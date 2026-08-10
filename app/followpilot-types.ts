@@ -55,7 +55,7 @@ export type ExpectedResult = {
 
 export type FixtureRecord = {
   case_id: string;
-  data_classification: "entirely_synthetic";
+  data_classification: "entirely_synthetic" | "connected_crm";
   reference_status: string;
   opportunity: {
     id: string;

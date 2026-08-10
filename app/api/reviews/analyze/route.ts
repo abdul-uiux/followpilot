@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import type { CrmValue, ExpectedResult, FieldKey, FieldResult, OutcomeState, RiskLevel } from "../../../followpilot-types";
 import { hubSpotTokensFromRequest } from "../../../lib/hubspot";
-import { fixtureRules, getDealFixture } from "../../../lib/review-test";
+import { findContactByEmail, fixtureRules, getDealFixture } from "../../../lib/review-test";
 
 export const runtime = "nodejs";
 
@@ -112,19 +112,21 @@ function parseGeminiResponse(value: unknown): GeminiOutput {
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json() as { transcript?: unknown; dealId?: unknown; contactId?: unknown };
+    const body = await request.json() as { transcript?: unknown; dealId?: unknown; contactEmail?: unknown };
     const transcript = typeof body.transcript === "string" ? body.transcript.trim() : "";
     const dealId = typeof body.dealId === "string" ? body.dealId : "";
-    const contactId = typeof body.contactId === "string" ? body.contactId : "";
+    const contactEmail = typeof body.contactEmail === "string" ? body.contactEmail : "";
     const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) throw new Error("Add GEMINI_API_KEY to .env.local before analysing a synthetic transcript.");
-    if (!transcript || !dealId) throw new Error("A transcript and synthetic HubSpot deal are required.");
-    if (transcript.length > 30_000) throw new Error("Keep the synthetic transcript under 30,000 characters.");
+    if (!apiKey) throw new Error("Add GEMINI_API_KEY to .env.local before analysing a meeting transcript.");
+    if (!transcript || !dealId || !contactEmail) throw new Error("A transcript, matched contact, and selected HubSpot deal are required.");
+    if (transcript.length > 30_000) throw new Error("Keep the transcript under 30,000 characters.");
 
     const tokens = await hubSpotTokensFromRequest(request);
-    const fixture = await getDealFixture(tokens.accessToken, dealId, contactId);
+    const contact = await findContactByEmail(tokens.accessToken, contactEmail);
+    if (!contact.deals.some((deal) => deal.id === dealId)) throw new Error("Select a deal associated with the matched HubSpot contact.");
+    const fixture = await getDealFixture(tokens.accessToken, dealId, contact.id, contact.name);
     const stageList = fixture.hubspot.stages.map((stage) => `${stage.label}: ${stage.id}`).join("\n");
-    const prompt = `You are FollowPilot's CRM review assistant. Analyse ONLY this entirely synthetic meeting transcript. Do not invent facts. Propose changes only where explicit transcript evidence supports them. For ambiguous or absent evidence use no_change, unable_to_determine, or conflict.\n\nCurrent synthetic deal:\n${JSON.stringify(fixture.opportunity.fields)}\n\nValid HubSpot deal stages (return the stage ID, never the label):\n${stageList}\n\nField rules:\n${JSON.stringify(fixtureRules)}\n\nTranscript:\n${transcript}`;
+    const prompt = `You are FollowPilot's CRM review assistant. Analyse the meeting transcript against the selected HubSpot deal. Do not invent facts. Propose changes only where explicit transcript evidence supports them. For ambiguous or absent evidence use no_change, unable_to_determine, or conflict.\n\nCurrent HubSpot deal:\n${JSON.stringify(fixture.opportunity.fields)}\n\nValid HubSpot deal stages (return the stage ID, never the label):\n${stageList}\n\nField rules:\n${JSON.stringify(fixtureRules)}\n\nTranscript:\n${transcript}`;
     const gemini = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent", {
       method: "POST",
       headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
@@ -157,10 +159,10 @@ export async function POST(request: NextRequest) {
     }
     const expected: ExpectedResult = {
       case_id: fixture.case_id,
-      case_name: "Gemini synthetic CRM review",
-      result_label: typeof generated.result_label === "string" ? generated.result_label.slice(0, 240) : "Synthetic transcript review",
+      case_name: "Gemini CRM review",
+      result_label: typeof generated.result_label === "string" ? generated.result_label.slice(0, 240) : "Meeting transcript review",
       validated_ground_truth: false,
-      opportunity_confirmation: { expected_opportunity_id: fixture.opportunity.id, expected_action: "confirm", reason: "Synthetic HubSpot test deal created for this review." },
+      opportunity_confirmation: { expected_opportunity_id: fixture.opportunity.id, expected_action: "confirm", reason: "Matched to the selected HubSpot contact and deal." },
       fields: resultFields,
     };
     return NextResponse.json({ fixture, expected });

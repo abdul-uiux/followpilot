@@ -28,6 +28,12 @@ type ApprovedChange = {
   action: "approved" | "edited" | "manual";
   risk: RiskLevel;
 };
+type MatchedContact = {
+  id: string;
+  email: string;
+  name: string;
+  deals: Array<{ id: string; name: string; stage: string; amount: string; closeDate: string; updatedAt: string }>;
+};
 
 const authSessionKey = "followpilot-demo-authenticated";
 
@@ -186,6 +192,13 @@ function UploadModal({
   authorized,
   setAuthorized,
   isAnalyzing,
+  contactEmail,
+  setContactEmail,
+  matchedContact,
+  selectedDealId,
+  setSelectedDealId,
+  onFindContact,
+  isMatchingContact,
 }: {
   open: boolean;
   onClose: () => void;
@@ -203,6 +216,13 @@ function UploadModal({
   authorized: boolean;
   setAuthorized: (value: boolean) => void;
   isAnalyzing: boolean;
+  contactEmail: string;
+  setContactEmail: (value: string) => void;
+  matchedContact: MatchedContact | null;
+  selectedDealId: string;
+  setSelectedDealId: (value: string) => void;
+  onFindContact: () => void;
+  isMatchingContact: boolean;
 }) {
   if (!open) return null;
   return (
@@ -217,6 +237,7 @@ function UploadModal({
             <label className="text-sm font-medium">Meeting name<input value={meetingTitle} onChange={(event) => setMeetingTitle(event.target.value)} placeholder="e.g. BluePeak strategy review" className="mt-2 w-full rounded-lg border border-[#deddda] bg-white px-3 py-2.5 text-sm font-normal outline-none transition placeholder:text-[#9b9995] focus:border-[#191919] focus:ring-4 focus:ring-[#e9e9e7]" /></label>
             <label className="text-sm font-medium">Attendees<input value={attendees} onChange={(event) => setAttendees(event.target.value)} placeholder="Names, separated by commas" className="mt-2 w-full rounded-lg border border-[#deddda] bg-white px-3 py-2.5 text-sm font-normal outline-none transition placeholder:text-[#9b9995] focus:border-[#191919] focus:ring-4 focus:ring-[#e9e9e7]" /></label>
           </div>
+          <div className="rounded-lg border border-[#ececea] bg-[#fafaf9] p-4"><label className="block text-sm font-medium">HubSpot contact email<div className="mt-2 flex gap-2"><input value={contactEmail} onChange={(event) => setContactEmail(event.target.value)} type="email" placeholder="customer@company.com" className="min-w-0 flex-1 rounded-lg border border-[#deddda] bg-white px-3 py-2.5 text-sm font-normal outline-none focus:border-[#191919] focus:ring-4 focus:ring-[#e9e9e7]" /><button type="button" onClick={onFindContact} disabled={!contactEmail.trim() || isMatchingContact} className="rounded-md border border-[#deddda] bg-white px-3 text-[13px] font-medium text-[#52504d] disabled:opacity-45">{isMatchingContact ? "Finding…" : "Find contact"}</button></div></label>{matchedContact && <div className="mt-3"><p className="text-xs text-[#625f5c]">Matched <span className="font-medium text-[#191919]">{matchedContact.name}</span> · {matchedContact.email}</p>{matchedContact.deals.length ? <label className="mt-3 block text-xs font-medium text-[#52504d]">Choose associated deal<select value={selectedDealId} onChange={(event) => setSelectedDealId(event.target.value)} className="mt-1.5 w-full rounded-lg border border-[#deddda] bg-white px-3 py-2.5 text-[13px] font-normal outline-none focus:border-[#191919]">{matchedContact.deals.map((deal) => <option key={deal.id} value={deal.id}>{deal.name} · {deal.stage || "No stage"}</option>)}</select></label> : <p className="mt-2 text-xs text-[#a8342a]">This contact has no associated deals. Add or associate a deal in HubSpot first.</p>}</div>}</div>
           <label className="block text-sm font-medium">What was this meeting about?<textarea value={about} onChange={(event) => setAbout(event.target.value)} placeholder="Optional context to help focus the analysis" className="mt-2 min-h-20 w-full resize-y rounded-lg border border-[#deddda] bg-white px-3 py-2.5 text-sm font-normal leading-6 outline-none transition placeholder:text-[#9b9995] focus:border-[#191919] focus:ring-4 focus:ring-[#e9e9e7]" /></label>
           <div>
             <div className="flex items-center justify-between gap-3"><label className="text-sm font-medium">Meeting transcript</label><span className="text-xs text-[#787774]">.txt files supported</span></div>
@@ -228,7 +249,7 @@ function UploadModal({
           </div>
           <label className="flex items-start gap-3 rounded-lg bg-[#f5f5f3] p-3.5 text-xs leading-5 text-[#625f5c]"><input type="checkbox" checked={authorized} onChange={(event) => setAuthorized(event.target.checked)} className="mt-0.5 h-4 w-4 rounded border-[#c9c8c5] accent-[#191919]" />I’m authorized to share this transcript and it complies with my company’s meeting and privacy policy.</label>
         </div>
-        <footer className="flex flex-col-reverse gap-3 border-t border-[#ececea] px-6 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-8"><p className="text-xs text-[#787774]">Review only authorized, synthetic test transcripts in this workspace.</p><div className="flex gap-2"><button type="button" onClick={onClose} disabled={isAnalyzing} className="rounded-md px-4 py-2.5 text-sm font-medium text-[#625f5c] transition hover:bg-[#f2f2f0] disabled:opacity-45">Cancel</button><button type="button" onClick={onAnalyze} disabled={!transcript.trim() || !authorized || isAnalyzing} className="inline-flex items-center justify-center gap-2 rounded-md bg-[#191919] px-4 py-2.5 text-sm font-medium text-white transition hover:bg-[#353535] focus:outline-none focus:ring-4 focus:ring-[#d9d9d7] disabled:cursor-not-allowed disabled:opacity-45"><SparkIcon /> {isAnalyzing ? "Analyzing…" : "Analyze now"}</button></div></footer>
+        <footer className="flex flex-col-reverse gap-3 border-t border-[#ececea] px-6 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-8"><p className="text-xs text-[#787774]">Only approved changes will be sent to the selected HubSpot contact and deal.</p><div className="flex gap-2"><button type="button" onClick={onClose} disabled={isAnalyzing} className="rounded-md px-4 py-2.5 text-sm font-medium text-[#625f5c] transition hover:bg-[#f2f2f0] disabled:opacity-45">Cancel</button><button type="button" onClick={onAnalyze} disabled={!transcript.trim() || !authorized || !matchedContact || !selectedDealId || isAnalyzing} className="inline-flex items-center justify-center gap-2 rounded-md bg-[#191919] px-4 py-2.5 text-sm font-medium text-white transition hover:bg-[#353535] focus:outline-none focus:ring-4 focus:ring-[#d9d9d7] disabled:cursor-not-allowed disabled:opacity-45"><SparkIcon /> {isAnalyzing ? "Analyzing…" : "Analyze now"}</button></div></footer>
       </section>
     </div>
   );
@@ -560,9 +581,12 @@ export default function FollowPilotReview({
   const [transcript, setTranscript] = useState(initialTranscript);
   const [fixture, setFixture] = useState(initialFixture);
   const [expected, setExpected] = useState(initialExpected);
-  const [testRecord, setTestRecord] = useState<{ contactId: string; dealId: string } | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isApplying, setIsApplying] = useState(false);
+  const [contactEmail, setContactEmail] = useState("");
+  const [matchedContact, setMatchedContact] = useState<MatchedContact | null>(null);
+  const [selectedDealId, setSelectedDealId] = useState("");
+  const [isMatchingContact, setIsMatchingContact] = useState(false);
   const [hubSpotConnection, setHubSpotConnection] = useState<{ configured: boolean; connected: boolean }>({ configured: true, connected: false });
   const [connectionLoading, setConnectionLoading] = useState(true);
   const [uploadOpen, setUploadOpen] = useState(false);
@@ -698,34 +722,35 @@ export default function FollowPilotReview({
     setEditingField(null);
   };
 
-  const createTestRecord = async () => {
+  const findContact = async () => {
+    if (!contactEmail.trim()) return;
+    setIsMatchingContact(true);
     try {
-      const response = await fetch("/api/hubspot/test-record", { method: "POST" });
-      const value = await response.json() as { fixture?: FixtureRecord & { hubspot?: { contactId: string; dealId: string } }; error?: string };
-      if (!response.ok || !value.fixture?.hubspot) throw new Error(value.error || "Test record could not be created.");
-      setFixture(value.fixture);
-      setTestRecord(value.fixture.hubspot);
-      addAudit("Synthetic CRM record created", `${value.fixture.opportunity.name} (${value.fixture.opportunity.id})`, "Ready for Gemini review");
-      showToast("Synthetic HubSpot contact and deal created");
-      return value.fixture.hubspot;
+      const response = await fetch("/api/hubspot/match", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ contactEmail }) });
+      const value = await response.json() as { contact?: MatchedContact; error?: string };
+      if (!response.ok || !value.contact) throw new Error(value.error || "HubSpot contact could not be matched.");
+      setMatchedContact(value.contact);
+      setSelectedDealId(value.contact.deals[0]?.id ?? "");
+      showToast(value.contact.deals.length ? "Contact and associated deals found" : "Contact found, but no associated deals are available", value.contact.deals.length ? undefined : "error");
     } catch (error) {
-      showToast(error instanceof Error ? error.message : "Test record could not be created", "error");
-      return null;
+      setMatchedContact(null);
+      setSelectedDealId("");
+      showToast(error instanceof Error ? error.message : "HubSpot contact could not be matched", "error");
+    } finally {
+      setIsMatchingContact(false);
     }
   };
 
   const analyzeMeeting = async () => {
-    if (!transcript.trim() || !hubSpotConnection.connected) return;
+    if (!transcript.trim() || !hubSpotConnection.connected || !matchedContact || !selectedDealId) return;
     setIsAnalyzing(true);
     setUploadOpen(false);
     setStep("review");
     try {
-      const record = testRecord ?? await createTestRecord();
-      if (!record) return;
       const response = await fetch("/api/reviews/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ transcript, dealId: record.dealId, contactId: record.contactId }),
+        body: JSON.stringify({ transcript, dealId: selectedDealId, contactEmail: matchedContact.email }),
       });
       const value = await response.json() as { fixture?: FixtureRecord; expected?: ExpectedResult; error?: string };
       if (!response.ok || !value.fixture || !value.expected) throw new Error(value.error || "Gemini could not analyse this transcript.");
@@ -734,7 +759,7 @@ export default function FollowPilotReview({
       setUploadOpen(false);
       setIsOnboarding(false);
       window.history.replaceState(null, "", "/");
-      addAudit("Gemini analysis complete", `${meetingTitle || "Untitled meeting"} produced evidence-backed CRM proposals`, "Analysis ready");
+      addAudit("Gemini analysis complete", `${meetingTitle || "Untitled meeting"} matched to ${matchedContact.name} and produced evidence-backed CRM proposals`, "Analysis ready");
       setStep("intake");
       showToast("Gemini review is ready");
     } catch (error) {
@@ -786,8 +811,8 @@ export default function FollowPilotReview({
   };
 
   const applyApprovedChanges = async () => {
-    if (!testRecord) {
-      showToast("Create and analyse a synthetic test record first", "error");
+    if (!matchedContact || !selectedDealId) {
+      showToast("Match a HubSpot contact and select a deal first", "error");
       return;
     }
     setIsApplying(true);
@@ -800,7 +825,7 @@ export default function FollowPilotReview({
       const response = await fetch("/api/hubspot/apply", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ dealId: testRecord.dealId, changes: approvedChanges.map((change) => ({ field: change.field, after: change.after })) }),
+        body: JSON.stringify({ dealId: selectedDealId, contactEmail: matchedContact.email, changes: approvedChanges.map((change) => ({ field: change.field, after: change.after })) }),
       });
       const value = await response.json() as { results?: Array<{ field: FieldKey; ok: boolean; message: string }>; error?: string };
       if (!response.ok || !value.results) throw new Error(value.error || "HubSpot updates could not be applied.");
@@ -827,7 +852,7 @@ export default function FollowPilotReview({
           <div className="hidden items-center gap-3 sm:flex"><button type="button" className="grid h-8 w-8 place-items-center rounded-md text-[#787774] transition hover:bg-[#efefed]" aria-label="Notifications">◌</button><div className="h-6 w-px bg-[#e8e7e4]" /><div className="grid h-7 w-7 place-items-center rounded-full bg-[#e8e7e4] text-[10px] font-semibold">AR</div></div>
         </header>
 
-        <UploadModal open={uploadOpen} onClose={() => setUploadOpen(false)} onAnalyze={analyzeMeeting} transcript={transcript} setTranscript={setTranscript} meetingTitle={meetingTitle} setMeetingTitle={setMeetingTitle} attendees={attendees} setAttendees={setAttendees} about={meetingAbout} setAbout={setMeetingAbout} fileName={uploadedFileName} onFile={handleTranscriptFile} authorized={authorizedToShare} setAuthorized={setAuthorizedToShare} isAnalyzing={isAnalyzing} />
+        <UploadModal open={uploadOpen} onClose={() => setUploadOpen(false)} onAnalyze={analyzeMeeting} transcript={transcript} setTranscript={setTranscript} meetingTitle={meetingTitle} setMeetingTitle={setMeetingTitle} attendees={attendees} setAttendees={setAttendees} about={meetingAbout} setAbout={setMeetingAbout} fileName={uploadedFileName} onFile={handleTranscriptFile} authorized={authorizedToShare} setAuthorized={setAuthorizedToShare} isAnalyzing={isAnalyzing} contactEmail={contactEmail} setContactEmail={setContactEmail} matchedContact={matchedContact} selectedDealId={selectedDealId} setSelectedDealId={setSelectedDealId} onFindContact={() => void findContact()} isMatchingContact={isMatchingContact} />
 
         {step === "dashboard" && isOnboarding && (
           <div className="mx-auto flex min-h-[calc(100vh-3.5rem)] max-w-5xl items-center px-5 py-10 sm:px-8 lg:py-14">
@@ -852,10 +877,10 @@ export default function FollowPilotReview({
                 <div className="mt-5 flex flex-wrap gap-2"><button type="button" onClick={() => { window.location.assign("/api/hubspot/connect?returnTo=/"); }} disabled={connectionLoading || !hubSpotConnection.configured} className="rounded-md bg-[#191919] px-3.5 py-2 text-[13px] font-medium text-white disabled:opacity-45">{connectionLoading ? "Checking HubSpot…" : "Connect HubSpot"}</button><button type="button" onClick={startSampleReview} className="rounded-md border border-[#deddda] bg-white px-3.5 py-2 text-[13px] font-medium text-[#52504d] hover:text-[#191919]">View test meeting</button></div>
               </section>
             ) : (
-              <section className="mt-8 rounded-xl border border-[#deddda] bg-white p-4 shadow-[0_1px_2px_rgba(0,0,0,0.03)] sm:p-5"><textarea aria-label="Paste a meeting transcript" value={transcript} onChange={(event) => setTranscript(event.target.value)} placeholder="Paste your synthetic meeting transcript here…" className="min-h-52 w-full resize-y border-0 bg-transparent p-1 text-sm leading-6 outline-none placeholder:text-[#9b9995]" /><div className="mt-3 flex flex-col gap-3 border-t border-[#ececea] pt-3 sm:flex-row sm:items-center sm:justify-between"><p className="text-xs text-[#787774]">{transcript.trim() ? `${transcript.length.toLocaleString()} characters ready to analyze` : "Paste a synthetic transcript or upload a .txt file"}</p><div className="flex flex-wrap items-center gap-2"><button type="button" onClick={() => setUploadOpen(true)} className="rounded-md px-3 py-2 text-sm font-medium text-[#625f5c] hover:bg-[#f2f2f0]">Add details</button><button type="button" onClick={() => void analyzeMeeting()} disabled={!transcript.trim() || isAnalyzing} className="inline-flex items-center gap-2 rounded-md bg-[#191919] px-3.5 py-2 text-sm font-medium text-white transition hover:bg-[#353535] disabled:cursor-not-allowed disabled:opacity-40"><SparkIcon /> Analyze now</button></div></div></section>
+              <section className="mt-8 rounded-xl border border-[#deddda] bg-white p-4 shadow-[0_1px_2px_rgba(0,0,0,0.03)] sm:p-5"><textarea aria-label="Paste a meeting transcript" value={transcript} onChange={(event) => setTranscript(event.target.value)} placeholder="Paste the meeting transcript here…" className="min-h-52 w-full resize-y border-0 bg-transparent p-1 text-sm leading-6 outline-none placeholder:text-[#9b9995]" /><div className="mt-3 flex flex-col gap-3 border-t border-[#ececea] pt-3 sm:flex-row sm:items-center sm:justify-between"><p className="text-xs text-[#787774]">{matchedContact ? `Matched to ${matchedContact.name} · ${matchedContact.deals.find((deal) => deal.id === selectedDealId)?.name ?? "Select a deal"}` : transcript.trim() ? "Add contact details to choose the HubSpot record" : "Paste a transcript, then add the HubSpot contact details"}</p><div className="flex flex-wrap items-center gap-2"><button type="button" onClick={() => setUploadOpen(true)} className="rounded-md px-3 py-2 text-sm font-medium text-[#625f5c] hover:bg-[#f2f2f0]">Add details</button><button type="button" onClick={() => matchedContact && selectedDealId ? void analyzeMeeting() : setUploadOpen(true)} disabled={!transcript.trim() || isAnalyzing} className="inline-flex items-center gap-2 rounded-md bg-[#191919] px-3.5 py-2 text-sm font-medium text-white transition hover:bg-[#353535] disabled:cursor-not-allowed disabled:opacity-40"><SparkIcon /> Analyze now</button></div></div></section>
             )}
             <div className="mt-10 flex items-end justify-between"><div><h2 className="text-base font-semibold">Recent meetings</h2><p className="mt-1 text-sm text-[#787774]">Your latest review work, all in one place.</p></div><button type="button" className="text-sm text-[#625f5c] hover:text-[#191919]">View all</button></div>
-            <section id="recent" className="mt-4 overflow-hidden rounded-xl border border-[#deddda] bg-white"><div className="grid grid-cols-[minmax(0,1fr)_100px_110px] gap-4 border-b border-[#ececea] px-4 py-2.5 text-[11px] font-medium text-[#787774] sm:px-5"><span>MEETING</span><span>UPDATED</span><span>STATUS</span></div>{[{ title: "BluePeak Analytics · Q3 product strategy", time: "Today", state: "Ready to review", tone: "bg-[#efefed] text-[#3f3d3a]" }, { title: "Northstar · Operations rollout", time: "Yesterday", state: "Needs decision", tone: "bg-[#f6f1e5] text-[#856404]" }, { title: "Cedar & Finch · Compliance platform", time: "Aug 3", state: "Completed", tone: "bg-[#ebf5ed] text-[#2e6b43]" }].map((meeting) => <button key={meeting.title} type="button" onClick={() => meeting.state === "Ready to review" && (setStep("intake"), setMeetingTitle("Q3 Product Strategy Review"))} className="grid w-full grid-cols-[minmax(0,1fr)_100px_110px] items-center gap-4 border-b border-[#f0efed] px-4 py-3.5 text-left last:border-0 hover:bg-[#fafaf9] sm:px-5"><span className="min-w-0"><span className="block truncate text-sm font-medium">{meeting.title}</span><span className="mt-0.5 block text-xs text-[#787774]">HubSpot-style fixture</span></span><span className="text-xs text-[#787774]">{meeting.time}</span><span><span className={cx("inline-flex rounded-full px-2 py-1 text-[11px] font-medium", meeting.tone)}>{meeting.state}</span></span></button>)}</section>
+            <section id="recent" className="mt-4 rounded-xl border border-[#deddda] bg-white px-5 py-8 text-center sm:px-6"><p className="text-sm font-medium">No real meetings yet</p><p className="mt-1 text-xs text-[#787774]">Your analyzed meetings will appear here after the first review.</p></section>
           </div>
         )}
 
@@ -1111,7 +1136,7 @@ export default function FollowPilotReview({
             <p className="text-xs font-medium text-[#787774]">Final confirmation</p>
             <h1 className="mt-2 text-3xl font-semibold tracking-[-0.035em] text-slate-950 sm:text-4xl">Review what will change</h1>
             <p className="mx-auto mt-3 max-w-2xl text-base leading-7 text-slate-600">
-              This is the complete update set for {fixture.opportunity.name}. Only the approved fields will be written to the synthetic HubSpot record.
+              This is the complete update set for {fixture.opportunity.name}. Only the approved fields will be written to the selected HubSpot record.
             </p>
           </div>
 
@@ -1121,7 +1146,7 @@ export default function FollowPilotReview({
                 <h2 className="font-semibold text-slate-950">Approved update set</h2>
                 <p className="mt-1 text-xs text-slate-500">{approvedChanges.length} CRM write{approvedChanges.length === 1 ? "" : "s"} ready</p>
               </div>
-              <span className="rounded-full bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700">Synthetic HubSpot test</span>
+              <span className="rounded-full bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700">Connected HubSpot record</span>
             </header>
             {approvedChanges.length ? (
               <div className="divide-y divide-slate-100">
@@ -1180,9 +1205,9 @@ export default function FollowPilotReview({
               <div>
                 <div className="grid h-11 w-11 place-items-center rounded-lg bg-[#191919] text-white"><CheckIcon className="h-6 w-6" /></div>
                 <p className="mt-5 text-xs font-medium text-[#787774]">HubSpot test complete</p>
-                <h1 className="mt-2 text-3xl font-semibold tracking-[-0.035em] sm:text-4xl">The synthetic record is up to date.</h1>
+                <h1 className="mt-2 text-3xl font-semibold tracking-[-0.035em] sm:text-4xl">Your HubSpot record is up to date.</h1>
                 <p className="mt-3 max-w-2xl text-sm leading-6 text-[#625f5c]">
-                  {approvedChanges.length} approved change{approvedChanges.length === 1 ? " was" : "s were"} sent to the synthetic HubSpot record. Check the audit history for individual results.
+                  {approvedChanges.length} approved change{approvedChanges.length === 1 ? " was" : "s were"} sent to the selected HubSpot record. Check the audit history for individual results.
                 </p>
               </div>
               <div className="rounded-lg bg-[#f5f5f3] px-5 py-4">

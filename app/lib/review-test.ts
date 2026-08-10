@@ -1,7 +1,5 @@
-import { hubSpotFetch, type HubSpotTokens } from "./hubspot";
+import { hubSpotFetch } from "./hubspot";
 import type { CrmValue, FixtureRecord, FieldKey } from "../followpilot-types";
-
-export const testRecordPrefix = "FollowPilot test";
 
 export const fixtureRules: Record<FieldKey, string> = {
   deal_stage: "Advance the deal only when the customer explicitly agrees to the next commercial step.",
@@ -17,6 +15,9 @@ type HubSpotPipeline = { id: string; label: string; stages: HubSpotStage[] };
 export type DealFixture = FixtureRecord & {
   hubspot: { contactId: string; dealId: string; pipelineId: string; stages: Array<{ id: string; label: string }> };
 };
+
+export type HubSpotDealMatch = { id: string; name: string; stage: string; amount: string; closeDate: string; updatedAt: string };
+export type HubSpotContactMatch = { id: string; email: string; name: string; deals: HubSpotDealMatch[] };
 
 function asString(value: unknown, fallback = "") {
   return typeof value === "string" ? value : fallback;
@@ -42,7 +43,7 @@ async function hubSpotJson<T>(path: string, accessToken: string, init?: RequestI
 export async function getDealPipeline(accessToken: string) {
   const value = await hubSpotJson<{ results?: HubSpotPipeline[] }>("/crm/v3/pipelines/deals", accessToken);
   const pipeline = value.results?.find((item) => item.stages?.length) ?? value.results?.[0];
-  if (!pipeline?.stages?.length) throw new Error("No HubSpot deal pipeline is available for the test record.");
+  if (!pipeline?.stages?.length) throw new Error("No HubSpot deal pipeline is available.");
   return {
     id: pipeline.id,
     label: pipeline.label,
@@ -52,7 +53,7 @@ export async function getDealPipeline(accessToken: string) {
   };
 }
 
-export async function getDealFixture(accessToken: string, dealId: string, contactId = ""): Promise<DealFixture> {
+export async function getDealFixture(accessToken: string, dealId: string, contactId = "", contactName = "Connected contact"): Promise<DealFixture> {
   const [pipeline, deal] = await Promise.all([
     getDealPipeline(accessToken),
     hubSpotJson<{ id: string; properties?: Record<string, unknown> }>(
@@ -67,19 +68,19 @@ export async function getDealFixture(accessToken: string, dealId: string, contac
     next_step: asString(properties.hs_next_step, "No next step recorded"),
     close_date: dateValue(properties.closedate),
     amount: asMoney(properties.amount),
-    notes: "No FollowPilot test note has been added yet.",
+    notes: "No FollowPilot note has been added yet.",
   };
 
   return {
     case_id: `hubspot-${deal.id}`,
-    data_classification: "entirely_synthetic",
-    reference_status: "Synthetic HubSpot test record",
+    data_classification: "connected_crm",
+    reference_status: "Connected HubSpot record",
     opportunity: {
       id: deal.id,
-      name: asString(properties.dealname, `${testRecordPrefix} deal`),
-      company: testRecordPrefix,
+      name: asString(properties.dealname, "Untitled deal"),
+      company: contactName,
       status: "open",
-      owner: { name: "FollowPilot test", role: "automation" },
+      owner: { name: "HubSpot", role: "connected CRM" },
       fields,
     },
     user_provided_context: null,
@@ -88,39 +89,31 @@ export async function getDealFixture(accessToken: string, dealId: string, contac
   };
 }
 
-export async function createSyntheticTestRecord(tokens: HubSpotTokens) {
-  const timestamp = new Date().toISOString().replace(/[-:.TZ]/g, "").slice(0, 14);
-  const pipeline = await getDealPipeline(tokens.accessToken);
-  const firstStage = pipeline.stages[0];
-  const closeDate = Date.UTC(2026, 8, 30).toString();
-  const contact = await hubSpotJson<{ id: string }>("/crm/v3/objects/contacts", tokens.accessToken, {
+export async function findContactByEmail(accessToken: string, email: string): Promise<HubSpotContactMatch> {
+  const normalizedEmail = email.trim().toLowerCase();
+  if (!normalizedEmail) throw new Error("Enter the HubSpot contact email to continue.");
+  const search = await hubSpotJson<{ results?: Array<{ id: string; properties?: Record<string, unknown> }> }>("/crm/v3/objects/contacts/search", accessToken, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      properties: {
-        firstname: "FollowPilot",
-        lastname: `Test ${timestamp}`,
-        email: `followpilot.test.${timestamp}@example.test`,
-        company: testRecordPrefix,
-      },
+      filterGroups: [{ filters: [{ propertyName: "email", operator: "EQ", value: normalizedEmail }] }],
+      properties: ["firstname", "lastname", "email"],
+      limit: 2,
     }),
   });
-  const deal = await hubSpotJson<{ id: string }>("/crm/v3/objects/deals", tokens.accessToken, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      properties: {
-        dealname: `${testRecordPrefix} · Gemini review ${timestamp}`,
-        pipeline: pipeline.id,
-        dealstage: firstStage.id,
-        amount: "48000",
-        closedate: closeDate,
-        hs_next_step: "Technical evaluation with the synthetic test team",
-      },
-    }),
-  });
-  await hubSpotJson(`/crm/v4/objects/contacts/${contact.id}/associations/default/deals/${deal.id}`, tokens.accessToken, { method: "PUT" });
-  return getDealFixture(tokens.accessToken, deal.id, contact.id);
+  const contact = search.results?.[0];
+  if (!contact) throw new Error("No HubSpot contact matches that email.");
+  if ((search.results?.length ?? 0) > 1) throw new Error("More than one HubSpot contact matches that email. Use a unique email.");
+  const properties = contact.properties ?? {};
+  const associations = await hubSpotJson<{ results?: Array<{ toObjectId?: string }> }>(`/crm/v4/objects/contacts/${encodeURIComponent(contact.id)}/associations/deals?limit=100`, accessToken);
+  const dealIds = (associations.results ?? []).flatMap((item) => typeof item.toObjectId === "string" ? [item.toObjectId] : []);
+  const deals = await Promise.all(dealIds.map(async (dealId) => {
+    const deal = await hubSpotJson<{ id: string; properties?: Record<string, unknown> }>(`/crm/v3/objects/deals/${encodeURIComponent(dealId)}?properties=dealname,dealstage,amount,closedate,hs_lastmodifieddate`, accessToken);
+    const values = deal.properties ?? {};
+    return { id: deal.id, name: asString(values.dealname, "Untitled deal"), stage: asString(values.dealstage), amount: asString(values.amount), closeDate: dateValue(values.closedate), updatedAt: asString(values.hs_lastmodifieddate) };
+  }));
+  const name = [asString(properties.firstname), asString(properties.lastname)].filter(Boolean).join(" ") || normalizedEmail;
+  return { id: contact.id, email: asString(properties.email, normalizedEmail), name, deals: deals.sort((left, right) => right.updatedAt.localeCompare(left.updatedAt)) };
 }
 
 export function dateToHubSpotTimestamp(value: string) {
