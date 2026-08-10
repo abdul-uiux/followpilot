@@ -1,6 +1,6 @@
 "use client";
 
-import { type ChangeEvent, type FormEvent, useMemo, useState } from "react";
+import { type ChangeEvent, type FormEvent, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AppSidebar } from "./components/app-sidebar";
 import { useToast } from "./components/toast-provider";
@@ -124,11 +124,11 @@ function AuthScreen({
 }: {
   mode: "sign-in" | "sign-up";
   onModeChange: (mode: "sign-in" | "sign-up") => void;
-  onAuthenticated: () => void;
+  onAuthenticated: (signedUp: boolean) => void;
 }) {
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    onAuthenticated();
+    onAuthenticated(signingUp);
   };
   const signingUp = mode === "sign-up";
 
@@ -151,7 +151,7 @@ function AuthScreen({
             <button type="submit" className="mt-2 flex w-full items-center justify-center rounded-lg bg-[#191919] px-4 py-2.5 text-sm font-medium text-white transition hover:bg-[#353535] focus:outline-none focus:ring-4 focus:ring-[#d9d9d7]">{signingUp ? "Create workspace" : "Sign in"}</button>
           </form>
           <div className="my-6 flex items-center gap-3 text-xs text-[#9b9995]"><span className="h-px flex-1 bg-[#e8e7e4]" />or<span className="h-px flex-1 bg-[#e8e7e4]" /></div>
-          <button type="button" onClick={onAuthenticated} className="flex w-full items-center justify-center gap-2 rounded-lg border border-[#deddda] bg-white px-4 py-2.5 text-sm font-medium transition hover:bg-[#f7f7f5] focus:outline-none focus:ring-4 focus:ring-[#e9e9e7]"><span className="text-base">G</span> Continue with Google</button>
+          <button type="button" onClick={() => onAuthenticated(signingUp)} className="flex w-full items-center justify-center gap-2 rounded-lg border border-[#deddda] bg-white px-4 py-2.5 text-sm font-medium transition hover:bg-[#f7f7f5] focus:outline-none focus:ring-4 focus:ring-[#e9e9e7]"><span className="text-base">G</span> Continue with Google</button>
           <p className="mt-7 text-center text-sm text-[#625f5c]">{signingUp ? "Already have a workspace?" : "New to FollowPilot?"} <button type="button" onClick={() => onModeChange(signingUp ? "sign-in" : "sign-up")} className="font-medium text-[#191919] underline underline-offset-4">{signingUp ? "Sign in" : "Create one"}</button></p>
           <p className="mt-8 text-center text-xs leading-5 text-[#9b9995]">Demo authentication only. Connect a real identity provider before production.</p>
         </div>
@@ -185,6 +185,7 @@ function UploadModal({
   onFile,
   authorized,
   setAuthorized,
+  isAnalyzing,
 }: {
   open: boolean;
   onClose: () => void;
@@ -201,6 +202,7 @@ function UploadModal({
   onFile: (event: ChangeEvent<HTMLInputElement>) => void;
   authorized: boolean;
   setAuthorized: (value: boolean) => void;
+  isAnalyzing: boolean;
 }) {
   if (!open) return null;
   return (
@@ -208,7 +210,7 @@ function UploadModal({
       <section role="dialog" aria-modal="true" aria-labelledby="upload-title" className="max-h-[94vh] w-full max-w-2xl overflow-y-auto rounded-t-xl bg-white shadow-2xl sm:rounded-xl" onMouseDown={(event) => event.stopPropagation()}>
         <header className="flex items-start justify-between border-b border-[#ececea] px-6 py-5 sm:px-8">
           <div><p className="text-sm font-medium text-[#787774]">New meeting</p><h2 id="upload-title" className="mt-1 text-2xl font-semibold tracking-[-0.03em] text-[#191919]">Review a transcript</h2><p className="mt-2 text-sm leading-6 text-[#625f5c]">Add the meeting context, then review every CRM update before anything is included.</p></div>
-          <button type="button" onClick={onClose} aria-label="Close upload dialog" className="ml-4 grid h-8 w-8 shrink-0 place-items-center rounded-md text-xl text-[#787774] transition hover:bg-[#f2f2f0] hover:text-[#191919]">×</button>
+          <button type="button" onClick={onClose} disabled={isAnalyzing} aria-label="Close upload dialog" className="ml-4 grid h-8 w-8 shrink-0 place-items-center rounded-md text-xl text-[#787774] transition hover:bg-[#f2f2f0] hover:text-[#191919] disabled:opacity-45">×</button>
         </header>
         <div className="space-y-5 px-6 py-6 sm:px-8">
           <div className="grid gap-5 sm:grid-cols-2">
@@ -226,7 +228,7 @@ function UploadModal({
           </div>
           <label className="flex items-start gap-3 rounded-lg bg-[#f5f5f3] p-3.5 text-xs leading-5 text-[#625f5c]"><input type="checkbox" checked={authorized} onChange={(event) => setAuthorized(event.target.checked)} className="mt-0.5 h-4 w-4 rounded border-[#c9c8c5] accent-[#191919]" />I’m authorized to share this transcript and it complies with my company’s meeting and privacy policy.</label>
         </div>
-        <footer className="flex flex-col-reverse gap-3 border-t border-[#ececea] px-6 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-8"><p className="text-xs text-[#787774]">Your transcript stays in this fixture workspace.</p><div className="flex gap-2"><button type="button" onClick={onClose} className="rounded-md px-4 py-2.5 text-sm font-medium text-[#625f5c] transition hover:bg-[#f2f2f0]">Cancel</button><button type="button" onClick={onAnalyze} disabled={!transcript.trim() || !authorized} className="inline-flex items-center justify-center gap-2 rounded-md bg-[#191919] px-4 py-2.5 text-sm font-medium text-white transition hover:bg-[#353535] focus:outline-none focus:ring-4 focus:ring-[#d9d9d7] disabled:cursor-not-allowed disabled:opacity-45"><SparkIcon /> Review meeting</button></div></footer>
+        <footer className="flex flex-col-reverse gap-3 border-t border-[#ececea] px-6 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-8"><p className="text-xs text-[#787774]">Review only authorized, synthetic test transcripts in this workspace.</p><div className="flex gap-2"><button type="button" onClick={onClose} disabled={isAnalyzing} className="rounded-md px-4 py-2.5 text-sm font-medium text-[#625f5c] transition hover:bg-[#f2f2f0] disabled:opacity-45">Cancel</button><button type="button" onClick={onAnalyze} disabled={!transcript.trim() || !authorized || isAnalyzing} className="inline-flex items-center justify-center gap-2 rounded-md bg-[#191919] px-4 py-2.5 text-sm font-medium text-white transition hover:bg-[#353535] focus:outline-none focus:ring-4 focus:ring-[#d9d9d7] disabled:cursor-not-allowed disabled:opacity-45"><SparkIcon /> {isAnalyzing ? "Analyzing…" : "Analyze now"}</button></div></footer>
       </section>
     </div>
   );
@@ -538,8 +540,8 @@ function FieldCard({
 
 export default function FollowPilotReview({
   transcript: initialTranscript,
-  fixture,
-  expected,
+  fixture: initialFixture,
+  expected: initialExpected,
   showOnboarding = false,
 }: {
   transcript: string;
@@ -556,6 +558,13 @@ export default function FollowPilotReview({
   const [authMode, setAuthMode] = useState<"sign-in" | "sign-up">("sign-in");
   const [step, setStep] = useState<FlowStep>("dashboard");
   const [transcript, setTranscript] = useState(initialTranscript);
+  const [fixture, setFixture] = useState(initialFixture);
+  const [expected, setExpected] = useState(initialExpected);
+  const [testRecord, setTestRecord] = useState<{ contactId: string; dealId: string } | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isApplying, setIsApplying] = useState(false);
+  const [hubSpotConnection, setHubSpotConnection] = useState<{ configured: boolean; connected: boolean }>({ configured: true, connected: false });
+  const [connectionLoading, setConnectionLoading] = useState(true);
   const [uploadOpen, setUploadOpen] = useState(false);
   const [meetingTitle, setMeetingTitle] = useState("Q3 Product Strategy Review");
   const [attendees, setAttendees] = useState("Sarah Chen, Michael Lowe");
@@ -566,12 +575,12 @@ export default function FollowPilotReview({
     Object.fromEntries(
       fieldKeys.map((field) => [
         field,
-        expected.fields[field].outcome_state === "proposed_change" ? "pending" : "not_applicable",
+        initialExpected.fields[field].outcome_state === "proposed_change" ? "pending" : "not_applicable",
       ]),
     ) as Record<FieldKey, ReviewDecision>,
   );
   const [editValues, setEditValues] = useState<Record<FieldKey, string>>(() =>
-    Object.fromEntries(fieldKeys.map((field) => [field, editableValue(expected.fields[field].proposed_value)])) as Record<
+    Object.fromEntries(fieldKeys.map((field) => [field, editableValue(initialExpected.fields[field].proposed_value)])) as Record<
       FieldKey,
       string
     >,
@@ -584,10 +593,29 @@ export default function FollowPilotReview({
   const [manualReason, setManualReason] = useState("");
   const [audit, setAudit] = useState<AuditEntry[]>([]);
 
-  const completeAuthentication = () => {
+  const completeAuthentication = (signedUp: boolean) => {
     window.sessionStorage.setItem(authSessionKey, "true");
     setIsAuthenticated(true);
+    if (signedUp) router.push("/onboarding");
   };
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    let active = true;
+    const loadConnection = async () => {
+      try {
+        const response = await fetch("/api/hubspot/status", { cache: "no-store" });
+        const value = await response.json() as { configured?: boolean; connected?: boolean };
+        if (active) setHubSpotConnection({ configured: value.configured !== false, connected: value.connected === true });
+      } catch {
+        if (active) setHubSpotConnection({ configured: true, connected: false });
+      } finally {
+        if (active) setConnectionLoading(false);
+      }
+    };
+    void loadConnection();
+    return () => { active = false; };
+  }, [isAuthenticated]);
 
   const addAudit = (event: string, detail: string, result: string) => {
     setAudit((current) => [
@@ -662,13 +690,59 @@ export default function FollowPilotReview({
     reader.readAsText(file);
   };
 
-  const analyzeMeeting = () => {
+  const resetReview = (nextExpected: ExpectedResult) => {
+    setExpected(nextExpected);
+    setDecisions(Object.fromEntries(fieldKeys.map((field) => [field, nextExpected.fields[field].outcome_state === "proposed_change" ? "pending" : "not_applicable"])) as Record<FieldKey, ReviewDecision>);
+    setEditValues(Object.fromEntries(fieldKeys.map((field) => [field, editableValue(nextExpected.fields[field].proposed_value)])) as Record<FieldKey, string>);
+    setManualChanges([]);
+    setEditingField(null);
+  };
+
+  const createTestRecord = async () => {
+    try {
+      const response = await fetch("/api/hubspot/test-record", { method: "POST" });
+      const value = await response.json() as { fixture?: FixtureRecord & { hubspot?: { contactId: string; dealId: string } }; error?: string };
+      if (!response.ok || !value.fixture?.hubspot) throw new Error(value.error || "Test record could not be created.");
+      setFixture(value.fixture);
+      setTestRecord(value.fixture.hubspot);
+      addAudit("Synthetic CRM record created", `${value.fixture.opportunity.name} (${value.fixture.opportunity.id})`, "Ready for Gemini review");
+      showToast("Synthetic HubSpot contact and deal created");
+      return value.fixture.hubspot;
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : "Test record could not be created", "error");
+      return null;
+    }
+  };
+
+  const analyzeMeeting = async () => {
+    if (!transcript.trim() || !hubSpotConnection.connected) return;
+    setIsAnalyzing(true);
     setUploadOpen(false);
-    setIsOnboarding(false);
-    window.history.replaceState(null, "", "/");
-    addAudit("Transcript submitted", `${meetingTitle || "Untitled meeting"} prepared for fixture analysis`, "Analysis ready");
-    setStep("intake");
-    showToast("Meeting review is ready");
+    setStep("review");
+    try {
+      const record = testRecord ?? await createTestRecord();
+      if (!record) return;
+      const response = await fetch("/api/reviews/analyze", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ transcript, dealId: record.dealId, contactId: record.contactId }),
+      });
+      const value = await response.json() as { fixture?: FixtureRecord; expected?: ExpectedResult; error?: string };
+      if (!response.ok || !value.fixture || !value.expected) throw new Error(value.error || "Gemini could not analyse this transcript.");
+      setFixture(value.fixture);
+      resetReview(value.expected);
+      setUploadOpen(false);
+      setIsOnboarding(false);
+      window.history.replaceState(null, "", "/");
+      addAudit("Gemini analysis complete", `${meetingTitle || "Untitled meeting"} produced evidence-backed CRM proposals`, "Analysis ready");
+      setStep("intake");
+      showToast("Gemini review is ready");
+    } catch (error) {
+      setStep("dashboard");
+      showToast(error instanceof Error ? error.message : "Gemini could not analyse this transcript", "error");
+    } finally {
+      setIsAnalyzing(false);
+    }
   };
 
   const startSampleReview = () => {
@@ -711,20 +785,33 @@ export default function FollowPilotReview({
     setManualOpen(false);
   };
 
-  const runSimulation = () => {
+  const applyApprovedChanges = async () => {
+    if (!testRecord) {
+      showToast("Create and analyse a synthetic test record first", "error");
+      return;
+    }
+    setIsApplying(true);
     addAudit(
       "Final confirmation",
       `${approvedChanges.length} change${approvedChanges.length === 1 ? "" : "s"} authorized`,
       "Confirmed",
     );
-    approvedChanges.forEach((change) =>
-      addAudit(
-        "Simulated apply result",
-        `${change.label}: ${formatValue(change.before)} → ${change.after}`,
-        "Applied successfully",
-      ),
-    );
-    setStep("complete");
+    try {
+      const response = await fetch("/api/hubspot/apply", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ dealId: testRecord.dealId, changes: approvedChanges.map((change) => ({ field: change.field, after: change.after })) }),
+      });
+      const value = await response.json() as { results?: Array<{ field: FieldKey; ok: boolean; message: string }>; error?: string };
+      if (!response.ok || !value.results) throw new Error(value.error || "HubSpot updates could not be applied.");
+      value.results.forEach((result) => addAudit(result.ok ? "HubSpot update applied" : "HubSpot update failed", `${fieldLabels[result.field]}: ${result.message}`, result.ok ? "Applied successfully" : "Needs attention"));
+      setStep("complete");
+      showToast(value.results.every((result) => result.ok) ? "Approved changes applied to HubSpot" : "Some changes need attention", value.results.every((result) => result.ok) ? undefined : "error");
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : "HubSpot updates could not be applied", "error");
+    } finally {
+      setIsApplying(false);
+    }
   };
 
   if (!isAuthenticated) {
@@ -732,24 +819,24 @@ export default function FollowPilotReview({
   }
 
   return (
-    <AppShell onNewMeeting={() => setUploadOpen(true)}>
+    <AppShell onNewMeeting={() => hubSpotConnection.connected ? setUploadOpen(true) : router.push("/onboarding")}>
       <main id="workspace" className="min-h-screen">
         <header className="flex h-14 items-center justify-between border-b border-[#e8e7e4] bg-[#fbfbfa] px-5 sm:px-7">
-          <div className="flex items-center gap-3"><div className="grid h-7 w-7 place-items-center rounded-md bg-[#191919] text-xs font-bold text-white lg:hidden">F</div><div><p className="text-sm font-medium">{step === "dashboard" ? "Home" : meetingTitle || "Meeting analysis"}</p><p className="text-[11px] text-[#787774]">Fixture workspace</p></div></div>
+          <div className="flex items-center gap-3"><div className="grid h-7 w-7 place-items-center rounded-md bg-[#191919] text-xs font-bold text-white lg:hidden">F</div><div><p className="text-sm font-medium">{step === "dashboard" ? "Home" : meetingTitle || "Meeting analysis"}</p><p className="text-[11px] text-[#787774]">Personal workspace</p></div></div>
           <button type="button" onClick={() => setUploadOpen(true)} className="inline-flex items-center gap-2 rounded-md bg-[#191919] px-3 py-2 text-sm font-medium text-white transition hover:bg-[#353535] lg:hidden"><span className="text-base leading-none">+</span> New</button>
           <div className="hidden items-center gap-3 sm:flex"><button type="button" className="grid h-8 w-8 place-items-center rounded-md text-[#787774] transition hover:bg-[#efefed]" aria-label="Notifications">◌</button><div className="h-6 w-px bg-[#e8e7e4]" /><div className="grid h-7 w-7 place-items-center rounded-full bg-[#e8e7e4] text-[10px] font-semibold">AR</div></div>
         </header>
 
-        <UploadModal open={uploadOpen} onClose={() => setUploadOpen(false)} onAnalyze={analyzeMeeting} transcript={transcript} setTranscript={setTranscript} meetingTitle={meetingTitle} setMeetingTitle={setMeetingTitle} attendees={attendees} setAttendees={setAttendees} about={meetingAbout} setAbout={setMeetingAbout} fileName={uploadedFileName} onFile={handleTranscriptFile} authorized={authorizedToShare} setAuthorized={setAuthorizedToShare} />
+        <UploadModal open={uploadOpen} onClose={() => setUploadOpen(false)} onAnalyze={analyzeMeeting} transcript={transcript} setTranscript={setTranscript} meetingTitle={meetingTitle} setMeetingTitle={setMeetingTitle} attendees={attendees} setAttendees={setAttendees} about={meetingAbout} setAbout={setMeetingAbout} fileName={uploadedFileName} onFile={handleTranscriptFile} authorized={authorizedToShare} setAuthorized={setAuthorizedToShare} isAnalyzing={isAnalyzing} />
 
         {step === "dashboard" && isOnboarding && (
           <div className="mx-auto flex min-h-[calc(100vh-3.5rem)] max-w-5xl items-center px-5 py-10 sm:px-8 lg:py-14">
             <section className="w-full overflow-hidden rounded-2xl border border-[#deddda] bg-white shadow-[0_1px_2px_rgba(0,0,0,0.03)]">
               <div className="grid gap-8 p-6 sm:p-10 lg:grid-cols-[minmax(0,1fr)_240px] lg:items-end">
-                <div className="max-w-xl"><div className="grid h-11 w-11 place-items-center rounded-xl bg-[#191919] text-white"><SparkIcon className="h-5 w-5" /></div><p className="mt-6 text-xs font-semibold tracking-[0.14em] text-[#787774] uppercase">Your review workspace</p><h1 className="mt-2 text-3xl font-semibold tracking-[-0.04em] sm:text-4xl">Start with your first customer conversation.</h1><p className="mt-3 text-sm leading-6 text-[#625f5c]">Paste a transcript and FollowPilot will prepare the CRM changes for your review. Nothing is updated without your approval.</p><div className="mt-6 flex flex-wrap items-center gap-2"><button type="button" onClick={() => setUploadOpen(true)} className="inline-flex items-center gap-2 rounded-md bg-[#191919] px-3.5 py-2.5 text-[13px] font-medium text-white transition hover:bg-[#353535] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#d9d9d7]"><span className="text-base leading-none">+</span> Create your first review</button><button type="button" onClick={startSampleReview} className="rounded-md border border-[#deddda] bg-white px-3.5 py-2.5 text-[13px] font-medium text-[#52504d] transition hover:border-[#9b9995] hover:text-[#191919] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#e9e9e7]">Try a sample review</button></div></div>
-                <div className="rounded-xl border border-[#ececea] bg-[#fafaf9] p-5"><p className="text-[11px] font-semibold tracking-[0.12em] text-[#787774] uppercase">How it works</p><ol className="mt-4 space-y-4">{["Add a customer-call transcript", "Review suggested CRM changes", "Approve only what is correct"].map((item, index) => <li key={item} className="flex gap-3 text-xs leading-5 text-[#625f5c]"><span className="grid h-5 w-5 shrink-0 place-items-center rounded-full border border-[#deddda] bg-white text-[10px] font-semibold text-[#52504d]">{index + 1}</span>{item}</li>)}</ol></div>
+                <div className="max-w-xl"><div className="grid h-11 w-11 place-items-center rounded-xl bg-[#191919] text-white"><SparkIcon className="h-5 w-5" /></div><p className="mt-6 text-xs font-semibold tracking-[0.14em] text-[#787774] uppercase">Set up your workspace</p><h1 className="mt-2 text-3xl font-semibold tracking-[-0.04em] sm:text-4xl">Connect HubSpot before your first review.</h1><p className="mt-3 text-sm leading-6 text-[#625f5c]">FollowPilot needs a connected CRM to match each meeting and keep all proposed changes in your review queue.</p><div className="mt-6 flex flex-wrap items-center gap-2">{hubSpotConnection.connected ? <button type="button" onClick={() => { setIsOnboarding(false); router.push("/"); }} className="inline-flex items-center gap-2 rounded-md bg-[#191919] px-3.5 py-2.5 text-[13px] font-medium text-white transition hover:bg-[#353535]"><CheckIcon /> Start reviewing</button> : <button type="button" onClick={() => { window.location.assign("/api/hubspot/connect?returnTo=/onboarding"); }} disabled={connectionLoading || !hubSpotConnection.configured} className="inline-flex items-center gap-2 rounded-md bg-[#191919] px-3.5 py-2.5 text-[13px] font-medium text-white transition hover:bg-[#353535] disabled:opacity-45"><span className="text-base leading-none">+</span> {connectionLoading ? "Checking connection…" : "Connect HubSpot"}</button>}<button type="button" onClick={startSampleReview} className="rounded-md border border-[#deddda] bg-white px-3.5 py-2.5 text-[13px] font-medium text-[#52504d] transition hover:border-[#9b9995] hover:text-[#191919]">View a test meeting</button></div>{!connectionLoading && !hubSpotConnection.configured && <p className="mt-3 text-xs text-[#a8342a]">HubSpot OAuth needs to be configured for this workspace.</p>}</div>
+                <div className="rounded-xl border border-[#ececea] bg-[#fafaf9] p-5"><p className="text-[11px] font-semibold tracking-[0.12em] text-[#787774] uppercase">How it works</p><ol className="mt-4 space-y-4">{["Connect HubSpot", "Add a meeting transcript", "Review only approved changes"].map((item, index) => <li key={item} className="flex gap-3 text-xs leading-5 text-[#625f5c]"><span className="grid h-5 w-5 shrink-0 place-items-center rounded-full border border-[#deddda] bg-white text-[10px] font-semibold text-[#52504d]">{index + 1}</span>{item}</li>)}</ol></div>
               </div>
-              <div className="border-t border-[#ececea] bg-[#fafaf9] px-6 py-3 text-xs text-[#787774] sm:px-10">You can upload a .txt file or paste a transcript directly.</div>
+              <div className="border-t border-[#ececea] bg-[#fafaf9] px-6 py-3 text-xs text-[#787774] sm:px-10">Without HubSpot, you can still explore the sample meeting in Meetings.</div>
             </section>
           </div>
         )}
@@ -757,7 +844,16 @@ export default function FollowPilotReview({
         {step === "dashboard" && !isOnboarding && (
           <div className="mx-auto max-w-5xl px-5 py-10 sm:px-8 lg:py-14">
             <div className="max-w-2xl"><h1 className="text-2xl font-semibold tracking-[-0.03em] sm:text-[28px]">Good morning, Alex</h1><p className="mt-2 text-sm leading-6 text-[#625f5c]">Paste a customer-call transcript and FollowPilot will prepare the CRM review for you.</p></div>
-            <section className="mt-8 rounded-xl border border-[#deddda] bg-white p-4 shadow-[0_1px_2px_rgba(0,0,0,0.03)] sm:p-5"><textarea aria-label="Paste a meeting transcript" value={transcript} onChange={(event) => setTranscript(event.target.value)} placeholder="Paste your meeting transcript here…" className="min-h-52 w-full resize-y border-0 bg-transparent p-1 text-sm leading-6 outline-none placeholder:text-[#9b9995]" /><div className="mt-3 flex flex-col gap-3 border-t border-[#ececea] pt-3 sm:flex-row sm:items-center sm:justify-between"><p className="text-xs text-[#787774]">{transcript.trim() ? `${transcript.length.toLocaleString()} characters ready to analyze` : "Paste a transcript or upload a .txt file"}</p><div className="flex items-center gap-2"><button type="button" onClick={() => setUploadOpen(true)} className="rounded-md px-3 py-2 text-sm font-medium text-[#625f5c] hover:bg-[#f2f2f0]">Add details</button><button type="button" onClick={() => setUploadOpen(true)} disabled={!transcript.trim()} className="inline-flex items-center gap-2 rounded-md bg-[#191919] px-3.5 py-2 text-sm font-medium text-white transition hover:bg-[#353535] disabled:cursor-not-allowed disabled:opacity-40"><SparkIcon /> Analyze</button></div></div></section>
+            {!hubSpotConnection.connected ? (
+              <section className="mt-8 rounded-xl border border-[#deddda] bg-white p-6 shadow-[0_1px_2px_rgba(0,0,0,0.03)] sm:p-7">
+                <p className="text-xs font-semibold tracking-[0.14em] text-[#787774] uppercase">CRM required</p>
+                <h2 className="mt-2 text-xl font-semibold tracking-[-0.025em]">Connect HubSpot to start a review.</h2>
+                <p className="mt-2 max-w-xl text-sm leading-6 text-[#625f5c]">Meeting reviews are available only with a connected HubSpot account. You can still explore the sample meeting while you set up your CRM.</p>
+                <div className="mt-5 flex flex-wrap gap-2"><button type="button" onClick={() => { window.location.assign("/api/hubspot/connect?returnTo=/"); }} disabled={connectionLoading || !hubSpotConnection.configured} className="rounded-md bg-[#191919] px-3.5 py-2 text-[13px] font-medium text-white disabled:opacity-45">{connectionLoading ? "Checking HubSpot…" : "Connect HubSpot"}</button><button type="button" onClick={startSampleReview} className="rounded-md border border-[#deddda] bg-white px-3.5 py-2 text-[13px] font-medium text-[#52504d] hover:text-[#191919]">View test meeting</button></div>
+              </section>
+            ) : (
+              <section className="mt-8 rounded-xl border border-[#deddda] bg-white p-4 shadow-[0_1px_2px_rgba(0,0,0,0.03)] sm:p-5"><textarea aria-label="Paste a meeting transcript" value={transcript} onChange={(event) => setTranscript(event.target.value)} placeholder="Paste your synthetic meeting transcript here…" className="min-h-52 w-full resize-y border-0 bg-transparent p-1 text-sm leading-6 outline-none placeholder:text-[#9b9995]" /><div className="mt-3 flex flex-col gap-3 border-t border-[#ececea] pt-3 sm:flex-row sm:items-center sm:justify-between"><p className="text-xs text-[#787774]">{transcript.trim() ? `${transcript.length.toLocaleString()} characters ready to analyze` : "Paste a synthetic transcript or upload a .txt file"}</p><div className="flex flex-wrap items-center gap-2"><button type="button" onClick={() => setUploadOpen(true)} className="rounded-md px-3 py-2 text-sm font-medium text-[#625f5c] hover:bg-[#f2f2f0]">Add details</button><button type="button" onClick={() => void analyzeMeeting()} disabled={!transcript.trim() || isAnalyzing} className="inline-flex items-center gap-2 rounded-md bg-[#191919] px-3.5 py-2 text-sm font-medium text-white transition hover:bg-[#353535] disabled:cursor-not-allowed disabled:opacity-40"><SparkIcon /> Analyze now</button></div></div></section>
+            )}
             <div className="mt-10 flex items-end justify-between"><div><h2 className="text-base font-semibold">Recent meetings</h2><p className="mt-1 text-sm text-[#787774]">Your latest review work, all in one place.</p></div><button type="button" className="text-sm text-[#625f5c] hover:text-[#191919]">View all</button></div>
             <section id="recent" className="mt-4 overflow-hidden rounded-xl border border-[#deddda] bg-white"><div className="grid grid-cols-[minmax(0,1fr)_100px_110px] gap-4 border-b border-[#ececea] px-4 py-2.5 text-[11px] font-medium text-[#787774] sm:px-5"><span>MEETING</span><span>UPDATED</span><span>STATUS</span></div>{[{ title: "BluePeak Analytics · Q3 product strategy", time: "Today", state: "Ready to review", tone: "bg-[#efefed] text-[#3f3d3a]" }, { title: "Northstar · Operations rollout", time: "Yesterday", state: "Needs decision", tone: "bg-[#f6f1e5] text-[#856404]" }, { title: "Cedar & Finch · Compliance platform", time: "Aug 3", state: "Completed", tone: "bg-[#ebf5ed] text-[#2e6b43]" }].map((meeting) => <button key={meeting.title} type="button" onClick={() => meeting.state === "Ready to review" && (setStep("intake"), setMeetingTitle("Q3 Product Strategy Review"))} className="grid w-full grid-cols-[minmax(0,1fr)_100px_110px] items-center gap-4 border-b border-[#f0efed] px-4 py-3.5 text-left last:border-0 hover:bg-[#fafaf9] sm:px-5"><span className="min-w-0"><span className="block truncate text-sm font-medium">{meeting.title}</span><span className="mt-0.5 block text-xs text-[#787774]">HubSpot-style fixture</span></span><span className="text-xs text-[#787774]">{meeting.time}</span><span><span className={cx("inline-flex rounded-full px-2 py-1 text-[11px] font-medium", meeting.tone)}>{meeting.state}</span></span></button>)}</section>
           </div>
@@ -840,7 +936,18 @@ export default function FollowPilotReview({
         </div>
       )}
 
-      {step === "review" && (
+      {step === "review" && isAnalyzing && (
+        <div className="mx-auto flex min-h-[calc(100vh-11rem)] max-w-3xl items-center px-5 py-12 sm:px-8">
+          <section className="w-full rounded-2xl border border-[#deddda] bg-white p-8 text-center shadow-[0_1px_2px_rgba(0,0,0,0.03)] sm:p-12">
+            <div className="mx-auto grid h-11 w-11 place-items-center rounded-full border-2 border-[#deddda] border-t-[#191919] animate-spin" aria-hidden="true" />
+            <p className="mt-7 text-xs font-semibold tracking-[0.14em] text-[#787774] uppercase">Preparing your review</p>
+            <h1 className="mt-2 text-2xl font-semibold tracking-[-0.035em] sm:text-3xl">Analyzing the meeting details.</h1>
+            <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-[#625f5c]">FollowPilot is matching the connected HubSpot record and preparing evidence-backed suggestions. Nothing will be changed automatically.</p>
+          </section>
+        </div>
+      )}
+
+      {step === "review" && !isAnalyzing && (
         <div className="mx-auto max-w-[1480px] px-4 py-8 sm:px-6 lg:px-8">
           <div className="grid gap-7 lg:grid-cols-[260px_minmax(0,1fr)]">
             <aside className="h-fit rounded-2xl border border-slate-200 bg-white p-4 lg:sticky lg:top-6">
@@ -1004,7 +1111,7 @@ export default function FollowPilotReview({
             <p className="text-xs font-medium text-[#787774]">Final confirmation</p>
             <h1 className="mt-2 text-3xl font-semibold tracking-[-0.035em] text-slate-950 sm:text-4xl">Review what will change</h1>
             <p className="mx-auto mt-3 max-w-2xl text-base leading-7 text-slate-600">
-              This is the complete update set for {fixture.opportunity.name}. No real HubSpot record will be changed.
+              This is the complete update set for {fixture.opportunity.name}. Only the approved fields will be written to the synthetic HubSpot record.
             </p>
           </div>
 
@@ -1014,7 +1121,7 @@ export default function FollowPilotReview({
                 <h2 className="font-semibold text-slate-950">Approved update set</h2>
                 <p className="mt-1 text-xs text-slate-500">{approvedChanges.length} CRM write{approvedChanges.length === 1 ? "" : "s"} ready</p>
               </div>
-              <span className="rounded-full bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700">Fixture simulation</span>
+              <span className="rounded-full bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700">Synthetic HubSpot test</span>
             </header>
             {approvedChanges.length ? (
               <div className="divide-y divide-slate-100">
@@ -1042,7 +1149,7 @@ export default function FollowPilotReview({
                 ))}
               </div>
             ) : (
-              <p className="px-6 py-12 text-center text-sm text-slate-500">No changes were approved. The simulation can complete with zero writes.</p>
+              <p className="px-6 py-12 text-center text-sm text-slate-500">No changes were approved. Complete the review with zero CRM writes.</p>
             )}
           </section>
 
@@ -1056,10 +1163,11 @@ export default function FollowPilotReview({
             </button>
             <button
               type="button"
-              onClick={runSimulation}
+              onClick={() => void applyApprovedChanges()}
+              disabled={isApplying}
               className="rounded-md bg-[#191919] px-5 py-3 text-sm font-medium text-white hover:bg-[#353535] focus:ring-4 focus:ring-[#d9d9d7]"
             >
-              Confirm simulated CRM update
+              {isApplying ? "Applying to HubSpot…" : "Apply approved HubSpot updates"}
             </button>
           </div>
         </div>
@@ -1071,10 +1179,10 @@ export default function FollowPilotReview({
             <div className="grid gap-6 md:grid-cols-[1fr_auto] md:items-end">
               <div>
                 <div className="grid h-11 w-11 place-items-center rounded-lg bg-[#191919] text-white"><CheckIcon className="h-6 w-6" /></div>
-                <p className="mt-5 text-xs font-medium text-[#787774]">Simulation complete</p>
-                <h1 className="mt-2 text-3xl font-semibold tracking-[-0.035em] sm:text-4xl">The fixture record is up to date.</h1>
+                <p className="mt-5 text-xs font-medium text-[#787774]">HubSpot test complete</p>
+                <h1 className="mt-2 text-3xl font-semibold tracking-[-0.035em] sm:text-4xl">The synthetic record is up to date.</h1>
                 <p className="mt-3 max-w-2xl text-sm leading-6 text-[#625f5c]">
-                  {approvedChanges.length} approved change{approvedChanges.length === 1 ? " was" : "s were"} simulated successfully. No real CRM data was written.
+                  {approvedChanges.length} approved change{approvedChanges.length === 1 ? " was" : "s were"} sent to the synthetic HubSpot record. Check the audit history for individual results.
                 </p>
               </div>
               <div className="rounded-lg bg-[#f5f5f3] px-5 py-4">
