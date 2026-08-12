@@ -27,15 +27,15 @@ const meetings: Meeting[] = [];
 const sampleMeeting: Meeting = {
   id: "acme-demo",
   title: "Product demo follow-up",
-  company: "Acme Co.",
+  company: "BluePeak Analytics",
   date: "Today",
   time: "11:30 AM",
   duration: "34 min",
-  attendees: "Taylor Brooks, Jordan Lee",
+  attendees: "Maya Chen, Omar Haddad",
   status: "Ready to review",
-  summary: "A product demo with clear interest in team reporting, onboarding support, and a follow-up with the operations lead.",
+  summary: "A product demo with clear interest in a formal proposal, security review, and procurement follow-up.",
   updates: ["3 suggested updates", "1 follow-up owner"],
-  detail: "The customer wants to evaluate the reporting workflow with their operations team. FollowPilot prepared the next step, buyer notes, and a proposed follow-up date for review.",
+  detail: "This synthetic meeting is ready to test. Review the prepared CRM changes, approve or edit them, then complete the simulated update without changing HubSpot.",
   sortDate: 20260808,
   period: "This week",
 };
@@ -63,8 +63,9 @@ function SearchIcon() {
 }
 
 function MeetingCard({ meeting, isOpen, onToggle }: { meeting: Meeting; isOpen: boolean; onToggle: (open: boolean) => void }) {
+  const isSampleMeeting = meeting.id === sampleMeeting.id;
   return (
-    <article className="overflow-hidden rounded-2xl border border-[#deddda] bg-white shadow-[0_1px_2px_rgba(0,0,0,0.025)] transition hover:border-[#c9c8c5]">
+    <article className={`overflow-hidden rounded-2xl border bg-white shadow-[0_1px_2px_rgba(0,0,0,0.025)] transition hover:border-[#c9c8c5] ${isSampleMeeting ? "sample-meeting-card" : "border-[#deddda]"}`}>
       <button type="button" aria-expanded={isOpen} aria-controls={`meeting-panel-${meeting.id}`} onClick={() => onToggle(!isOpen)} className="grid w-full cursor-pointer gap-5 px-5 py-5 text-left focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-inset focus-visible:ring-[#e9e9e7] sm:grid-cols-[minmax(0,1fr)_auto] sm:px-6">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2.5">
@@ -90,8 +91,7 @@ function MeetingCard({ meeting, isOpen, onToggle }: { meeting: Meeting; isOpen: 
                 <p className="mt-2 max-w-3xl text-sm leading-6 text-[#52504d]">{meeting.detail}</p>
               </div>
               <div className="flex flex-wrap gap-2 lg:justify-end">
-                <button type="button" className="rounded-lg border border-[#deddda] bg-white px-3.5 py-2 text-[13px] font-medium text-[#52504d] transition hover:border-[#9b9995] hover:text-[#191919]">View transcript</button>
-                <button type="button" className="rounded-lg bg-[#191919] px-3.5 py-2 text-[13px] font-medium text-white transition hover:bg-[#353535]">{meeting.status === "Completed" ? "View audit" : "Open review"} <span aria-hidden="true">→</span></button>
+                <Link href="/?sample=1" className="rounded-lg bg-[#191919] px-3.5 py-2 text-[13px] font-medium text-white transition hover:bg-[#353535]">{meeting.status === "Completed" ? "View audit" : "Open review"} <span aria-hidden="true">→</span></Link>
               </div>
             </div>
           </div>
@@ -103,11 +103,11 @@ function MeetingCard({ meeting, isOpen, onToggle }: { meeting: Meeting; isOpen: 
 
 function MeetingsContent() {
   const isSampleView = useSearchParams().get("sample") === "1";
-  const meetingSource = useMemo(() => isSampleView ? [sampleMeeting] : meetings, [isSampleView]);
+  const meetingSource = useMemo(() => [sampleMeeting, ...meetings], []);
   const [filter, setFilter] = useState<"all" | "needs-decision" | "completed">("all");
   const [sort, setSort] = useState<"recent" | "oldest" | "status">("recent");
   const [sortMenuOpen, setSortMenuOpen] = useState(false);
-  const [openMeetingId, setOpenMeetingId] = useState<string | null>(() => isSampleView ? sampleMeeting.id : "northstar");
+  const [openMeetingId, setOpenMeetingId] = useState<string | null>(() => sampleMeeting.id);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 

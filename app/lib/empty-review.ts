@@ -11,7 +11,7 @@ export function emptyReviewData(): { fixture: FixtureRecord; expected: ExpectedR
     reason: "No meeting has been analyzed yet.",
     expected_user_action: "acknowledge_no_change",
     risk_level: "low",
-  }])) as ExpectedResult["fields"];
+  }])) as unknown as ExpectedResult["fields"];
   return {
     fixture: { case_id: "unmatched", data_classification: "connected_crm", reference_status: "No record selected", opportunity: { id: "", name: "No deal selected", company: "", status: "open", owner: { name: "", role: "" }, fields }, user_provided_context: null, fixture_rules: Object.fromEntries(fieldKeys.map((field) => [field, "Match a HubSpot contact and deal to begin."])) as FixtureRecord["fixture_rules"] },
     expected: { case_id: "unmatched", case_name: "No review yet", result_label: "", validated_ground_truth: false, opportunity_confirmation: { expected_opportunity_id: "", expected_action: "confirm", reason: "Match a HubSpot contact and deal to begin." }, fields: expectedFields },

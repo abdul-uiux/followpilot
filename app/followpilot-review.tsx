@@ -621,11 +621,13 @@ export default function FollowPilotReview({
   fixture: initialFixture,
   expected: initialExpected,
   showOnboarding = false,
+  sampleReview = false,
 }: {
   transcript: string;
   fixture: FixtureRecord;
   expected: ExpectedResult;
   showOnboarding?: boolean;
+  sampleReview?: boolean;
 }) {
   const { showToast } = useToast();
   const router = useRouter();
@@ -633,7 +635,7 @@ export default function FollowPilotReview({
   const isAuthenticated = Boolean(user);
   const [isOnboarding, setIsOnboarding] = useState(showOnboarding);
   const [authMode, setAuthMode] = useState<"sign-in" | "sign-up">("sign-in");
-  const [step, setStep] = useState<FlowStep>("dashboard");
+  const [step, setStep] = useState<FlowStep>(sampleReview ? "intake" : "dashboard");
   const [transcript, setTranscript] = useState(initialTranscript);
   const [fixture, setFixture] = useState(initialFixture);
   const [expected, setExpected] = useState(initialExpected);
@@ -646,9 +648,9 @@ export default function FollowPilotReview({
   const [hubSpotConnection, setHubSpotConnection] = useState<{ configured: boolean; connected: boolean }>({ configured: true, connected: false });
   const [connectionLoading, setConnectionLoading] = useState(true);
   const [uploadOpen, setUploadOpen] = useState(false);
-  const [meetingTitle, setMeetingTitle] = useState("Q3 Product Strategy Review");
-  const [attendees, setAttendees] = useState("Sarah Chen, Michael Lowe");
-  const [meetingAbout, setMeetingAbout] = useState("Review the proposal, technical evaluation, and commercial next steps.");
+  const [meetingTitle, setMeetingTitle] = useState(sampleReview ? "Product demo follow-up" : "Q3 Product Strategy Review");
+  const [attendees, setAttendees] = useState(sampleReview ? "Maya Chen, Omar Haddad" : "Sarah Chen, Michael Lowe");
+  const [meetingAbout, setMeetingAbout] = useState(sampleReview ? "Review the proposal, security questionnaire, and procurement follow-up." : "Review the proposal, technical evaluation, and commercial next steps.");
   const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
   const [authorizedToShare, setAuthorizedToShare] = useState(false);
   const [decisions, setDecisions] = useState<Record<FieldKey, ReviewDecision>>(() =>
@@ -865,6 +867,15 @@ export default function FollowPilotReview({
   };
 
   const applyApprovedChanges = async () => {
+    if (sampleReview) {
+      setIsApplying(true);
+      addAudit("Final confirmation", `${approvedChanges.length} sample change${approvedChanges.length === 1 ? "" : "s"} authorized`, "Confirmed");
+      approvedChanges.forEach((change) => addAudit("Sample CRM update applied", `${fieldLabels[change.field]}: simulated successfully`, "Applied successfully"));
+      setStep("complete");
+      setIsApplying(false);
+      showToast("Sample review completed — no HubSpot data was changed");
+      return;
+    }
     if (!matchedContact || !selectedDealId) {
       showToast("Match a HubSpot contact and select a deal first", "error");
       return;
@@ -1004,7 +1015,7 @@ export default function FollowPilotReview({
                 ))}
               </dl>
               <div className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs leading-5 text-amber-900">
-                Product-team reference assumptions, pending sales/RevOps review.
+                {fixture.reference_status}.
               </div>
               <button
                 type="button"
@@ -1194,7 +1205,7 @@ export default function FollowPilotReview({
             <p className="text-xs font-medium text-[#787774]">Final confirmation</p>
             <h1 className="mt-2 text-3xl font-semibold tracking-[-0.035em] text-slate-950 sm:text-4xl">Review what will change</h1>
             <p className="mx-auto mt-3 max-w-2xl text-base leading-7 text-slate-600">
-              This is the complete update set for {fixture.opportunity.name}. Only the approved fields will be written to the selected HubSpot record.
+              This is the complete update set for {fixture.opportunity.name}. {sampleReview ? "This sample simulates the result and never changes HubSpot." : "Only the approved fields will be written to the selected HubSpot record."}
             </p>
           </div>
 
@@ -1202,9 +1213,9 @@ export default function FollowPilotReview({
             <header className="flex items-center justify-between gap-3 border-b border-slate-100 px-5 py-4 sm:px-6">
               <div>
                 <h2 className="font-semibold text-slate-950">Approved update set</h2>
-                <p className="mt-1 text-xs text-slate-500">{approvedChanges.length} CRM write{approvedChanges.length === 1 ? "" : "s"} ready</p>
+                <p className="mt-1 text-xs text-slate-500">{approvedChanges.length} CRM {sampleReview ? "simulation" : "write"}{approvedChanges.length === 1 ? "" : "s"} ready</p>
               </div>
-              <span className="rounded-full bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700">Connected HubSpot record</span>
+              <span className="rounded-full bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700">{sampleReview ? "Synthetic sample" : "Connected HubSpot record"}</span>
             </header>
             {approvedChanges.length ? (
               <div className="divide-y divide-slate-100">
@@ -1250,7 +1261,7 @@ export default function FollowPilotReview({
               disabled={isApplying}
               className="rounded-md bg-[#191919] px-5 py-3 text-sm font-medium text-white hover:bg-[#353535] focus:ring-4 focus:ring-[#d9d9d7]"
             >
-              {isApplying ? "Applying to HubSpot…" : "Apply approved HubSpot updates"}
+              {isApplying ? (sampleReview ? "Completing sample…" : "Applying to HubSpot…") : (sampleReview ? "Complete sample review" : "Apply approved HubSpot updates")}
             </button>
           </div>
         </div>
@@ -1262,10 +1273,10 @@ export default function FollowPilotReview({
             <div className="grid gap-6 md:grid-cols-[1fr_auto] md:items-end">
               <div>
                 <div className="grid h-11 w-11 place-items-center rounded-lg bg-[#191919] text-white"><CheckIcon className="h-6 w-6" /></div>
-                <p className="mt-5 text-xs font-medium text-[#787774]">HubSpot test complete</p>
-                <h1 className="mt-2 text-3xl font-semibold tracking-[-0.035em] sm:text-4xl">Your HubSpot record is up to date.</h1>
+                <p className="mt-5 text-xs font-medium text-[#787774]">{sampleReview ? "Sample review complete" : "HubSpot test complete"}</p>
+                <h1 className="mt-2 text-3xl font-semibold tracking-[-0.035em] sm:text-4xl">{sampleReview ? "You completed the sample review." : "Your HubSpot record is up to date."}</h1>
                 <p className="mt-3 max-w-2xl text-sm leading-6 text-[#625f5c]">
-                  {approvedChanges.length} approved change{approvedChanges.length === 1 ? " was" : "s were"} sent to the selected HubSpot record. Check the audit history for individual results.
+                  {approvedChanges.length} approved change{approvedChanges.length === 1 ? " was" : "s were"} {sampleReview ? "simulated. No HubSpot data was changed." : "sent to the selected HubSpot record."} Check the audit history for individual results.
                 </p>
               </div>
               <div className="rounded-lg bg-[#f5f5f3] px-5 py-4">
