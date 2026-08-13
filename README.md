@@ -1,51 +1,100 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# FollowPilot
 
-## Getting Started
+FollowPilot turns meeting transcripts into evidence-backed CRM updates for HubSpot. It identifies proposed changes with Gemini, keeps every decision under human control, and writes only approved updates to HubSpot.
 
-First, run the development server:
+## What it does
+
+- Firebase email/password and Google authentication
+- HubSpot OAuth connection with encrypted, HTTP-only token storage
+- Contact and associated-deal lookup from HubSpot
+- Gemini-powered transcript analysis
+- Review, edit, reject, or manually add CRM changes before applying them
+- Completed-meeting archive with a read-only audit view
+- Workspace settings, integration status, onboarding, and sample review flow
+
+## Local setup
+
+Requirements: Node.js 20+ and npm.
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+cp .env.example .env.local
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-## Firebase Authentication
-
-Create a Firebase project, register a Web app, and enable **Email/Password** and (optionally) **Google** in Firebase Authentication. Add the Web app configuration to `.env.local`:
+Add the following values to `.env.local`:
 
 ```bash
+# Firebase web app
 NEXT_PUBLIC_FIREBASE_API_KEY=
 NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=
 NEXT_PUBLIC_FIREBASE_PROJECT_ID=
 NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=
 NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=
 NEXT_PUBLIC_FIREBASE_APP_ID=
+
+# HubSpot OAuth app
+HUBSPOT_CLIENT_ID=
+HUBSPOT_CLIENT_SECRET=
+HUBSPOT_REDIRECT_URI=http://localhost:3000/api/hubspot/callback
+# Generate with: openssl rand -base64 32
+HUBSPOT_TOKEN_ENCRYPTION_KEY=
+
+# Gemini
+GEMINI_API_KEY=
 ```
 
-Restart the development server after adding these values. Firebase Auth manages account creation, sign-in, and persistent login state; configure your production domain in Firebase Authentication's authorized domains before deploying.
+Start the app:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm run dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Open http://localhost:3000.
 
-## Learn More
+## Provider configuration
 
-To learn more about Next.js, take a look at the following resources:
+### Firebase
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. Create a Firebase project and register a web app.
+2. Enable **Email/Password** and **Google** sign-in under Authentication.
+3. Copy the web app configuration into `.env.local`.
+4. Add your production domain to Firebase Authentication’s authorized domains before deploying.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### HubSpot
 
-## Deploy on Vercel
+1. Create a HubSpot public app with OAuth.
+2. Add `http://localhost:3000/api/hubspot/callback` as the local redirect URL.
+3. Request the CRM contact, company, and deal read/write scopes.
+4. Add the client ID, client secret, callback URL, and a unique encryption key to `.env.local`.
+5. Sign in to FollowPilot and use **Connect HubSpot** from Onboarding or Integrations.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Gemini
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Create a Gemini API key and assign it to `GEMINI_API_KEY`. The key is used only by the server-side analysis route.
+
+## Review flow
+
+1. Sign in and connect HubSpot.
+2. Add a meeting transcript, name, attendees, and the HubSpot contact.
+3. Select an associated deal and choose **Analyze now**.
+4. Confirm the matched opportunity, then approve, edit, reject, or add changes.
+5. Review final changes and apply them to HubSpot.
+6. Open the completed meeting’s **View audit** page to inspect the read-only completion result and audit history.
+
+The sample meeting lets users explore the workflow without writing CRM data.
+
+## Scripts
+
+```bash
+npm run dev    # Start the local development server
+npm run lint   # Run ESLint
+npm run build  # Create a production build
+npm run start  # Run the production server after building
+```
+
+## Data handling
+
+- HubSpot OAuth tokens are encrypted before being stored in an HTTP-only cookie.
+- Only approved changes are sent to HubSpot.
+- Meeting archive and UI preferences are stored locally in the browser for the current user session/workspace.
+- The app never applies suggested CRM changes automatically.
