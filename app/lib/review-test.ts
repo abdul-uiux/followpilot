@@ -23,6 +23,11 @@ function asString(value: unknown, fallback = "") {
   return typeof value === "string" ? value : fallback;
 }
 
+function asHubSpotId(value: unknown) {
+  if (typeof value === "string" || typeof value === "number") return String(value);
+  return "";
+}
+
 function asMoney(value: unknown): CrmValue {
   const amount = Number(value);
   return Number.isFinite(amount) ? { currency: "USD", value: amount } : { currency: "USD", value: 0 };
@@ -105,8 +110,16 @@ export async function findContactByEmail(accessToken: string, email: string): Pr
   if (!contact) throw new Error("No HubSpot contact matches that email.");
   if ((search.results?.length ?? 0) > 1) throw new Error("More than one HubSpot contact matches that email. Use a unique email.");
   const properties = contact.properties ?? {};
-  const associations = await hubSpotJson<{ results?: Array<{ toObjectId?: string }> }>(`/crm/v4/objects/contacts/${encodeURIComponent(contact.id)}/associations/deals?limit=100`, accessToken);
-  const dealIds = (associations.results ?? []).flatMap((item) => typeof item.toObjectId === "string" ? [item.toObjectId] : []);
+  const associations = await hubSpotJson<{ results?: Array<{ toObjectId?: string | number }> }>(`/crm/v4/objects/contacts/${encodeURIComponent(contact.id)}/associations/deals?limit=100`, accessToken);
+  let dealIds = (associations.results ?? []).map((item) => asHubSpotId(item.toObjectId)).filter(Boolean);
+
+  // The v3 association endpoint is retained as a compatibility fallback. Some
+  // connected portals return v4 association IDs as numbers, while others only
+  // expose the existing relationship through the v3 result shape.
+  if (!dealIds.length) {
+    const legacyAssociations = await hubSpotJson<{ results?: Array<{ id?: string | number }> }>(`/crm/v3/objects/contacts/${encodeURIComponent(contact.id)}/associations/deals?limit=100`, accessToken);
+    dealIds = (legacyAssociations.results ?? []).map((item) => asHubSpotId(item.id)).filter(Boolean);
+  }
   const deals = await Promise.all(dealIds.map(async (dealId) => {
     const deal = await hubSpotJson<{ id: string; properties?: Record<string, unknown> }>(`/crm/v3/objects/deals/${encodeURIComponent(dealId)}?properties=dealname,dealstage,amount,closedate,hs_lastmodifieddate`, accessToken);
     const values = deal.properties ?? {};

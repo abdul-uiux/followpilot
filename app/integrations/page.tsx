@@ -3,8 +3,9 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { AppSidebar } from "../components/app-sidebar";
-import { AccountMenu } from "../components/account-menu";
+import { AppHeader } from "../components/app-header";
 import { useToast } from "../components/toast-provider";
+import { readHubSpotStatus, saveHubSpotStatus, type HubSpotConnectionStatus } from "../lib/hubspot-status-cache";
 
 function CheckIcon() {
   return <svg className="h-4 w-4" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="m3.3 8.1 2.9 2.9 6.5-6.5" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" /></svg>;
@@ -16,8 +17,8 @@ function ExternalLinkIcon() {
 
 export default function IntegrationsPage() {
   const { showToast } = useToast();
-  const [connection, setConnection] = useState<{ configured: boolean; connected: boolean; portalId?: number | null; user?: string | null } | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [connection, setConnection] = useState<HubSpotConnectionStatus | null>(() => readHubSpotStatus());
+  const [loading, setLoading] = useState(() => readHubSpotStatus() === null);
   const [disconnecting, setDisconnecting] = useState(false);
 
   useEffect(() => {
@@ -25,7 +26,8 @@ export default function IntegrationsPage() {
     const loadConnection = async () => {
       try {
         const response = await fetch("/api/hubspot/status", { cache: "no-store" });
-        const value = await response.json() as { configured: boolean; connected: boolean; portalId?: number | null; user?: string | null };
+        const value = await response.json() as HubSpotConnectionStatus;
+        saveHubSpotStatus(value);
         if (active) setConnection(value);
       } catch {
         if (active) setConnection({ configured: true, connected: false });
@@ -46,7 +48,11 @@ export default function IntegrationsPage() {
     setDisconnecting(true);
     try {
       await fetch("/api/hubspot/status", { method: "DELETE" });
-      setConnection((current) => current ? { ...current, connected: false, portalId: null, user: null } : { configured: true, connected: false });
+      setConnection((current) => {
+        const value = current ? { ...current, connected: false, portalId: null, user: null } : { configured: true, connected: false };
+        saveHubSpotStatus(value);
+        return value;
+      });
       showToast("HubSpot disconnected");
     } catch {
       showToast("HubSpot could not be disconnected", "error");
@@ -59,10 +65,7 @@ export default function IntegrationsPage() {
     <div className="min-h-screen bg-[#f7f7f5] text-[#191919]">
       <AppSidebar activePage="integrations" />
       <div className="lg:pl-60">
-        <header className="flex h-14 items-center justify-between border-b border-[#e8e7e4] bg-[#fbfbfa] px-5 sm:px-7">
-          <div><p className="text-sm font-medium">Integrations</p><p className="text-[11px] text-[#787774]">Your workspace</p></div>
-          <AccountMenu />
-        </header>
+        <AppHeader title="Integrations" subtitle="Your workspace" />
 
         <main className="mx-auto max-w-4xl px-5 py-10 sm:px-8 lg:py-14">
           <div className="max-w-2xl">

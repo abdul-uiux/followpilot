@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { Suspense, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { AppSidebar } from "../components/app-sidebar";
-import { AccountMenu } from "../components/account-menu";
+import { AppHeader } from "../components/app-header";
+import { meetingArchiveEvent, readMeetingArchive, type ArchivedMeeting } from "../lib/meeting-archive";
 
 type Meeting = {
   id: string;
@@ -22,7 +23,6 @@ type Meeting = {
   period: "This week" | "Earlier";
 };
 
-const meetings: Meeting[] = [];
 
 const sampleMeeting: Meeting = {
   id: "acme-demo",
@@ -58,10 +58,6 @@ function UserRoundIcon() {
   return <svg className="h-3.5 w-3.5" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="5.15" r="2.45" stroke="currentColor" strokeWidth="1.35" /><path d="M3.35 13.1c.45-2.08 2.34-3.6 4.65-3.6s4.2 1.52 4.65 3.6" stroke="currentColor" strokeWidth="1.35" strokeLinecap="round" /></svg>;
 }
 
-function SearchIcon() {
-  return <svg className="h-4 w-4" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="7" cy="7" r="4.35" stroke="currentColor" strokeWidth="1.4" /><path d="m10.2 10.2 3 3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" /></svg>;
-}
-
 function MeetingCard({ meeting, isOpen, onToggle }: { meeting: Meeting; isOpen: boolean; onToggle: (open: boolean) => void }) {
   const isSampleMeeting = meeting.id === sampleMeeting.id;
   return (
@@ -91,7 +87,7 @@ function MeetingCard({ meeting, isOpen, onToggle }: { meeting: Meeting; isOpen: 
                 <p className="mt-2 max-w-3xl text-sm leading-6 text-[#52504d]">{meeting.detail}</p>
               </div>
               <div className="flex flex-wrap gap-2 lg:justify-end">
-                <Link href="/?sample=1" className="rounded-lg bg-[#191919] px-3.5 py-2 text-[13px] font-medium text-white transition hover:bg-[#353535]">{meeting.status === "Completed" ? "View audit" : "Open review"} <span aria-hidden="true">→</span></Link>
+                <Link href={meeting.status === "Completed" ? `/meetings/audit?id=${encodeURIComponent(meeting.id)}` : "/?sample=1"} className="rounded-lg bg-[#191919] px-3.5 py-2 text-[13px] font-medium text-white transition hover:bg-[#353535]">{meeting.status === "Completed" ? "View audit" : "Open review"} <span aria-hidden="true">→</span></Link>
               </div>
             </div>
           </div>
@@ -103,12 +99,22 @@ function MeetingCard({ meeting, isOpen, onToggle }: { meeting: Meeting; isOpen: 
 
 function MeetingsContent() {
   const isSampleView = useSearchParams().get("sample") === "1";
-  const meetingSource = useMemo(() => [sampleMeeting, ...meetings], []);
+  const [archivedMeetings, setArchivedMeetings] = useState<ArchivedMeeting[]>([]);
+  const [archiveReady, setArchiveReady] = useState(false);
+  useEffect(() => {
+    const updateMeetings = () => {
+      setArchivedMeetings(readMeetingArchive());
+      setArchiveReady(true);
+    };
+    updateMeetings();
+    window.addEventListener(meetingArchiveEvent, updateMeetings);
+    return () => window.removeEventListener(meetingArchiveEvent, updateMeetings);
+  }, []);
+  const meetingSource = useMemo<Meeting[]>(() => !archiveReady ? [] : archivedMeetings.length ? archivedMeetings : [sampleMeeting], [archiveReady, archivedMeetings]);
   const [filter, setFilter] = useState<"all" | "needs-decision" | "completed">("all");
   const [sort, setSort] = useState<"recent" | "oldest" | "status">("recent");
   const [sortMenuOpen, setSortMenuOpen] = useState(false);
   const [openMeetingId, setOpenMeetingId] = useState<string | null>(() => sampleMeeting.id);
-  const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
   const visibleMeetings = useMemo(() => {
@@ -146,7 +152,7 @@ function MeetingsContent() {
       <AppSidebar activePage="meetings" />
 
       <div className="lg:pl-60">
-        <header className="flex h-14 items-center justify-between border-b border-[#e8e7e4] bg-[#fbfbfa] px-5 sm:px-7"><div><p className="text-sm font-medium">Meetings</p><p className="text-[11px] text-[#787774]">Your workspace</p></div><Link href="/" className="rounded-md bg-[#191919] px-3 py-2 text-[13px] font-medium text-white transition hover:bg-[#353535] lg:hidden">+ New</Link><div className="hidden items-center gap-2 sm:flex">{searchOpen ? <div className="flex items-center rounded-md border border-[#c9c8c5] bg-white px-3 text-[#625f5c] focus-within:border-[#191919] focus-within:ring-4 focus-within:ring-[#e9e9e7]"><SearchIcon /><input autoFocus value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} aria-label="Search meetings" placeholder="Search meetings" className="h-9 w-64 bg-transparent px-2 text-[12px] text-[#191919] outline-none placeholder:text-[#9b9995]" /><button type="button" onClick={() => { setSearchOpen(false); setSearchQuery(""); }} aria-label="Close search" className="grid h-6 w-6 place-items-center rounded text-[13px] hover:bg-[#efefed]">×</button></div> : <button type="button" onClick={() => setSearchOpen(true)} aria-label="Search meetings" className="grid h-8 w-8 place-items-center rounded-md text-[#625f5c] transition hover:bg-[#efefed] hover:text-[#191919] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#e9e9e7]"><SearchIcon /></button>}<AccountMenu /></div></header>
+        <AppHeader title="Meetings" subtitle="Your workspace" searchValue={searchQuery} onSearchChange={setSearchQuery} searchPlaceholder="Search meetings" />
         <main className="mx-auto max-w-6xl px-5 py-10 sm:px-8 lg:py-14">
           <div className="flex flex-col justify-between gap-6 sm:flex-row sm:items-end">
             <div><p className="text-xs font-semibold tracking-[0.14em] text-[#787774] uppercase">Review archive</p><h1 className="mt-2 text-3xl font-semibold tracking-[-0.04em] sm:text-4xl">Every customer conversation,<br className="hidden sm:block" /> ready to pick back up.</h1><p className="mt-3 max-w-xl text-sm leading-6 text-[#625f5c]">Open a meeting to revisit its CRM decisions, evidence, and review outcome without reopening the whole workflow.</p></div>

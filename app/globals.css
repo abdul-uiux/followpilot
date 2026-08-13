@@ -58,11 +58,29 @@ button:disabled {
   animation: sample-border-shift 7s linear infinite;
 }
 
+.google-border-action {
+  border: 1.5px solid transparent;
+  background-image:
+    linear-gradient(#191919, #191919),
+    linear-gradient(105deg, #4285f4, #8b5cf6, #ea4335, #fbbc04, #34a853, #4285f4);
+  background-clip: padding-box, border-box;
+  background-origin: padding-box, border-box;
+  background-size: 100% 100%, 300% 100%;
+  animation: sample-border-shift 7s linear infinite;
+}
+
+.google-border-action:not(:disabled):hover {
+  background-image:
+    linear-gradient(#343330, #343330),
+    linear-gradient(105deg, #4285f4, #8b5cf6, #ea4335, #fbbc04, #34a853, #4285f4);
+}
+
 @keyframes sample-border-shift {
   to {
     background-position: 0 0, 300% 0;
   }
 }
+
 
 input,
 select,

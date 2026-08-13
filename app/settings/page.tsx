@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { updateProfile } from "firebase/auth";
 import { AppSidebar } from "../components/app-sidebar";
-import { AccountMenu } from "../components/account-menu";
+import { AppHeader } from "../components/app-header";
 import { useAuth } from "../components/auth-provider";
 import { firebaseAuth } from "../lib/firebase";
 import { useToast } from "../components/toast-provider";
@@ -53,7 +53,7 @@ function SettingsRow({ title, description, children }: { title: string; descript
 }
 
 export default function SettingsPage() {
-  const { user, displayName, refreshProfile } = useAuth();
+  const { user, displayName, initials, refreshProfile } = useAuth();
   const savedSettings = useState(loadSavedSettings)[0];
   const { showToast } = useToast();
   const [name, setName] = useState(savedSettings.name ?? "");
@@ -114,11 +114,7 @@ export default function SettingsPage() {
     <div className="min-h-screen bg-[#f7f7f5] text-[#191919]">
       <AppSidebar activePage="settings" />
       <div className="lg:pl-60">
-        <header className="flex h-14 items-center justify-between border-b border-[#e8e7e4] bg-[#fbfbfa] px-5 sm:px-7">
-          <div><p className="text-sm font-medium">Settings</p><p className="text-[11px] text-[#787774]">{accountWorkspace}</p></div>
-          <Link href="/" className="rounded-md bg-[#191919] px-3 py-2 text-[13px] font-medium text-white transition hover:bg-[#353535] lg:hidden">+ New</Link>
-          <AccountMenu />
-        </header>
+        <AppHeader title="Settings" subtitle={accountWorkspace} />
 
         <main className="mx-auto max-w-4xl px-5 py-10 sm:px-8 lg:py-14">
           <div className="max-w-2xl"><p className="text-xs font-semibold tracking-[0.14em] text-[#787774] uppercase">Workspace preferences</p><h1 className="mt-2 text-3xl font-semibold tracking-[-0.04em] sm:text-4xl">Make FollowPilot feel like yours.</h1><p className="mt-3 text-sm leading-6 text-[#625f5c]">Manage your workspace details, review defaults, and notification preferences.</p></div>
@@ -128,7 +124,7 @@ export default function SettingsPage() {
               <div className="mb-3"><h2 id="profile-heading" className="text-[13px] font-semibold">Profile & workspace</h2><p className="mt-1 text-xs text-[#787774]">Personal details and defaults for this workspace.</p></div>
               <div className="overflow-hidden rounded-xl border border-[#deddda] bg-white">
                 <div className="flex flex-col gap-4 border-b border-[#ececea] p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
-                  <div className="flex items-center gap-3"><div className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-[#e8e7e4] text-[13px] font-semibold">{accountName.split(" ").map((part) => part[0]).join("").slice(0, 2).toUpperCase()}</div><div><p className="text-[13px] font-medium">Profile picture</p><p className="mt-1 text-xs text-[#787774]">Avatar changes are temporarily unavailable.</p></div></div>
+                  <div className="flex items-center gap-3"><div className="grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-full bg-[#e8e7e4] bg-cover bg-center text-[13px] font-semibold text-[#191919]" style={user?.photoURL ? { backgroundImage: `url(${user.photoURL})` } : undefined}>{user?.photoURL ? <span className="sr-only">{displayName}</span> : initials}</div><div><p className="text-[13px] font-medium">Profile picture</p><p className="mt-1 text-xs text-[#787774]">Avatar changes are temporarily unavailable.</p></div></div>
                 </div>
                 <div className="grid gap-4 p-5 sm:grid-cols-2 sm:p-6">
                   <label className="block text-[13px] font-medium">Name<input value={accountName} onChange={(event) => setName(event.target.value)} className="mt-2 h-9 w-full rounded-md border border-[#deddda] bg-white px-3 text-[13px] font-normal outline-none transition placeholder:text-[#9b9995] focus:border-[#191919] focus:ring-4 focus:ring-[#e9e9e7]" /></label>
