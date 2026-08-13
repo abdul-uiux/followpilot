@@ -1,0 +1,34 @@
+{
+  "case_id": "case-01-clear-mixed",
+  "data_classification": "entirely_synthetic",
+  "record_type": "hubspot_style_fixture_opportunity",
+  "reference_status": "product_team_reference_assumptions_pending_sales_revops_review",
+  "opportunity": {
+    "id": "FP-DEAL-0101",
+    "name": "BluePeak Analytics - Annual Platform",
+    "company": "BluePeak Analytics",
+    "status": "open",
+    "owner": {
+      "name": "Elena Ruiz",
+      "role": "account_executive"
+    },
+    "fields": {
+      "deal_stage": "discovery",
+      "next_step": "Technical evaluation with operations team",
+      "close_date": "2026-09-30",
+      "amount": {
+        "currency": "USD",
+        "value": 48000
+      },
+      "notes": "Technical evaluation in progress with Maya Chen. Security and procurement ownership not yet documented."
+    }
+  },
+  "user_provided_context": null,
+  "fixture_rules": {
+    "deal_stage": "Move from discovery to proposal only when the customer explicitly confirms evaluation is complete and agrees to review a formal proposal.",
+    "next_step": "Record the next concrete action with owner and exact timing when explicitly stated.",
+    "close_date": "Change the close date only when the customer clearly confirms a different specific date; otherwise retain the existing value.",
+    "amount": "Change amount only when the commercial value or scope is explicitly confirmed as different; otherwise retain the existing value.",
+    "notes": "Add material buying-process facts or requirements explicitly stated during the call without removing still-relevant prior notes."
+  }
+}

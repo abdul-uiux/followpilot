@@ -1,0 +1,34 @@
+{
+  "case_id": "case-02-ambiguous-conflict",
+  "data_classification": "entirely_synthetic",
+  "record_type": "hubspot_style_fixture_opportunity",
+  "reference_status": "product_team_reference_assumptions_pending_sales_revops_review",
+  "opportunity": {
+    "id": "FP-DEAL-0201",
+    "name": "Northstar Retail - Operations Rollout",
+    "company": "Northstar Retail",
+    "status": "open",
+    "owner": {
+      "name": "Marcus Lee",
+      "role": "account_executive"
+    },
+    "fields": {
+      "deal_stage": "proposal",
+      "next_step": "Customer to confirm legal review timing",
+      "close_date": "2026-09-15",
+      "amount": {
+        "currency": "USD",
+        "value": 72000
+      },
+      "notes": "Proposal shared. Legal review is pending; commercial amount recorded at $72,000."
+    }
+  },
+  "user_provided_context": null,
+  "fixture_rules": {
+    "deal_stage": "Keep the deal in proposal until the customer explicitly confirms that commercial or legal negotiation has begun; do not advance on vague progress.",
+    "next_step": "Record a concrete action when owner and deadline are explicit.",
+    "close_date": "Do not assign or change a specific close date from vague timing or an unconfirmed estimate.",
+    "amount": "When explicit customer statements conflict about amount, show a conflict and require a user decision without preselecting a value.",
+    "notes": "Add material process ownership or unresolved commercial facts when explicitly supported, while preserving uncertainty."
+  }
+}

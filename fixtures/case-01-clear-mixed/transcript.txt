@@ -1,0 +1,29 @@
+Synthetic evaluation transcript
+Case: case-01-clear-mixed
+Meeting: BluePeak Analytics proposal planning
+Date: 2026-08-05
+Data status: Entirely fictional; no real customer or company information.
+
+[00:00] Elena Ruiz (Account Executive): Thanks for making time, Maya. I want to confirm where the analytics platform evaluation stands and what we should do next.
+
+[00:18] Maya Chen (VP of Operations, BluePeak Analytics): We finished the technical evaluation yesterday. The team is comfortable moving forward to a formal proposal review.
+
+[00:37] Elena Ruiz: Great. I have the current annual package at $48,000. Has the scope or budget changed?
+
+[00:45] Maya Chen: No, keep the scope and the $48,000 annual amount as quoted.
+
+[01:02] Elena Ruiz: Our CRM currently has September 30 as the target close date. Is that still the working date?
+
+[01:10] Maya Chen: Yes, September 30, 2026 still works as our target. Procurement has not promised an earlier signature.
+
+[01:28] Elena Ruiz: What should the next step be?
+
+[01:33] Maya Chen: Please send the formal proposal tomorrow, then let's review it with Omar on Friday, August 7 at 2:00 p.m. Eastern.
+
+[01:52] Elena Ruiz: Anything I should include for the review?
+
+[01:56] Maya Chen: Add the security questionnaire and note that Omar Haddad from procurement will lead the commercial review.
+
+[02:13] Elena Ruiz: Understood: formal proposal, security questionnaire, and a review with you and Omar on Friday at 2:00 Eastern.
+
+[02:22] Maya Chen: Correct.

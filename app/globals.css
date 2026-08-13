@@ -1,26 +1,113 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f7f7f5;
+  --foreground: #191919;
+  --font-ui: var(--font-inter), "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-code: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --font-sans: var(--font-ui);
+  --font-mono: var(--font-code);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-ui);
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button {
+  font-size: 13px;
+}
+
+/* Shared baseline for every actionable button, including controls without a
+   page-specific button variant. Individual components can still add richer
+   hover colors where their action hierarchy requires it. */
+button:not(:disabled) {
+  cursor: pointer;
+  transition: color 150ms ease-out, background-color 150ms ease-out, border-color 150ms ease-out, box-shadow 150ms ease-out, filter 150ms ease-out;
+}
+
+button:not(:disabled):hover {
+  filter: brightness(0.98);
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+.sample-meeting-card {
+  border-color: transparent;
+  background-image:
+    linear-gradient(#fff, #fff),
+    linear-gradient(105deg, #4285f4, #8b5cf6, #ea4335, #fbbc04, #34a853, #4285f4);
+  background-clip: padding-box, border-box;
+  background-origin: padding-box, border-box;
+  background-size: 100% 100%, 300% 100%;
+  animation: sample-border-shift 7s linear infinite;
+}
+
+.google-border-action {
+  border: 1.5px solid transparent;
+  background-image:
+    linear-gradient(#191919, #191919),
+    linear-gradient(105deg, #4285f4, #8b5cf6, #ea4335, #fbbc04, #34a853, #4285f4);
+  background-clip: padding-box, border-box;
+  background-origin: padding-box, border-box;
+  background-size: 100% 100%, 300% 100%;
+  animation: sample-border-shift 7s linear infinite;
+}
+
+.google-border-action:not(:disabled):hover {
+  background-image:
+    linear-gradient(#343330, #343330),
+    linear-gradient(105deg, #4285f4, #8b5cf6, #ea4335, #fbbc04, #34a853, #4285f4);
+}
+
+@keyframes sample-border-shift {
+  to {
+    background-position: 0 0, 300% 0;
+  }
+}
+
+
+input,
+select,
+textarea {
+  font-size: 13px;
+}
+
+button,
+a,
+input,
+select,
+textarea {
+  outline-offset: 2px;
+}
+
+::selection {
+  background: #e7e5e4;
+  color: #191919;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
 }

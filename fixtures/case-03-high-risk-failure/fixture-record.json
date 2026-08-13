@@ -1,0 +1,54 @@
+{
+  "case_id": "case-03-high-risk-failure",
+  "data_classification": "entirely_synthetic",
+  "record_type": "hubspot_style_fixture_opportunity",
+  "reference_status": "product_team_reference_assumptions_pending_sales_revops_review",
+  "opportunity": {
+    "id": "FP-DEAL-0301",
+    "name": "Cedar & Finch - Compliance Platform",
+    "company": "Cedar & Finch",
+    "status": "open",
+    "owner": {
+      "name": "Jonas Reed",
+      "role": "account_executive"
+    },
+    "fields": {
+      "deal_stage": "negotiation",
+      "next_step": "Confirm next legal-review action",
+      "close_date": "2026-09-30",
+      "amount": {
+        "currency": "USD",
+        "value": 90000
+      },
+      "notes": "Security-language review in progress. Legal owner and SOC 2 exception requirement not yet documented."
+    }
+  },
+  "user_provided_context": {
+    "text": "Procurement emailed me after the meeting that the annual commercial total should be $96,000. This amount was not discussed in the transcript.",
+    "source_type": "user_provided_context",
+    "not_transcript_evidence": true
+  },
+  "fixture_rules": {
+    "deal_stage": "Do not advance the stage when the customer explicitly says approval is not final; retain negotiation.",
+    "next_step": "Record a concrete action with owner and exact deadline when explicitly stated.",
+    "close_date": "Retain an existing planning date when the customer confirms it only as a planning date and provides no replacement date; do not represent it as a commitment.",
+    "amount": "User context may support an amount change only when it is visibly separated from transcript evidence and receives the additional context-only high-risk warning and confirmation.",
+    "notes": "Add material legal-review ownership and requirements explicitly stated in the transcript. A user edit may clarify wording without changing supported meaning."
+  },
+  "simulation_injections": {
+    "initial_system_omission": {
+      "field": "next_step",
+      "description": "The planned FollowPilot output intentionally misses the transcript-supported next-step update."
+    },
+    "partial_apply_failure": {
+      "field": "next_step",
+      "failure_code": "SIMULATED_FIXTURE_VALIDATION_FAILURE",
+      "message": "The manually added next step could not be applied to the fixture record.",
+      "available_recovery_actions": [
+        "retry",
+        "edit",
+        "skip"
+      ]
+    }
+  }
+}

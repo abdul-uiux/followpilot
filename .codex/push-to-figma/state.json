@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "target": {
+    "fileKey": "b9X5RBAOwsLJVBlCpxSkli",
+    "fileName": "Follow-Pilot 🌕",
+    "pageId": "2130:597",
+    "pageName": "warp"
+  },
+  "lastSyncedGitRef": "6fb6bebe2186cf5cf5bc2869b9ce612712ca9100",
+  "sequence": ["onboarding"],
+  "screens": {
+    "onboarding": {
+      "sourcePaths": [
+        "app/onboarding/page.tsx",
+        "app/followpilot-review.tsx",
+        "app/components/app-sidebar.tsx"
+      ],
+      "sourceFingerprint": "992641989dd66eafce67c4ae789431101ca81c51aabc45dc948b3b668fd88f28",
+      "wrapperNodeId": "2173:62",
+      "states": {
+        "empty": {
+          "nodeId": "2173:63",
+          "sourceFingerprint": "992641989dd66eafce67c4ae789431101ca81c51aabc45dc948b3b668fd88f28"
+        }
+      },
+      "sections": {
+        "sidebar": {
+          "nodeId": "2173:64",
+          "sourcePaths": ["app/components/app-sidebar.tsx"],
+          "sourceFingerprint": "04550903959ed04e559d8106dccbcb1d49cce55d28fb2cfe0e0242fb5042c254"
+        },
+        "onboarding-card": {
+          "nodeId": "2173:104",
+          "sourcePaths": ["app/followpilot-review.tsx"],
+          "sourceFingerprint": "2217793b96d89ee403ec5fef5418825bf5806152c895bb7430ef552844ed470f"
+        }
+      }
+    }
+  }
+}

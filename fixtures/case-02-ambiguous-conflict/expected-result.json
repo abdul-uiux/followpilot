@@ -1,0 +1,217 @@
+{
+  "case_id": "case-02-ambiguous-conflict",
+  "case_name": "Ambiguous and conflicting",
+  "result_label": "Product-team reference assumptions, pending sales/RevOps review",
+  "validated_ground_truth": false,
+  "allowed_outcome_states": [
+    "proposed_change",
+    "no_change",
+    "unable_to_determine",
+    "conflict"
+  ],
+  "opportunity_confirmation": {
+    "expected_opportunity_id": "FP-DEAL-0201",
+    "expected_action": "confirm",
+    "reason": "The transcript names Northstar and concerns one open operations-rollout opportunity."
+  },
+  "audit_event_requirements": {
+    "record_timestamp_at_runtime": true,
+    "required_attributes": [
+      "actor",
+      "opportunity_id",
+      "field_when_applicable",
+      "before_value_when_applicable",
+      "after_value_when_applicable",
+      "reason",
+      "customer_statement_evidence",
+      "decision_context",
+      "user_action",
+      "simulation_result"
+    ],
+    "source_types_must_remain_separate": true
+  },
+  "fields": {
+    "deal_stage": {
+      "outcome_state": "no_change",
+      "current_value": "proposal",
+      "proposed_value": null,
+      "customer_statement_evidence": [
+        {
+          "excerpt": "We are reviewing the proposal, but legal has not accepted the redlines, so we are not ready to call this negotiation complete.",
+          "speaker": "Priya Nair",
+          "timestamp": "02:06",
+          "interpretation": "explicit"
+        }
+      ],
+      "decision_context": {
+        "user_provided_context": null,
+        "existing_crm_value": "proposal",
+        "fixture_rule": "Keep the deal in proposal until the customer explicitly confirms that commercial or legal negotiation has begun; do not advance on vague progress."
+      },
+      "reason": "The transcript supports continued proposal review but not a definite stage advancement.",
+      "expected_user_action": "acknowledge_no_change",
+      "risk_level": "high"
+    },
+    "next_step": {
+      "outcome_state": "proposed_change",
+      "current_value": "Customer to confirm legal review timing",
+      "proposed_value": "Marcus Lee to send revised data-processing redlines to Priya Nair by 2026-08-07",
+      "customer_statement_evidence": [
+        {
+          "excerpt": "Send the revised data-processing redlines to me by Friday, August 7. I will route them to legal.",
+          "speaker": "Priya Nair",
+          "timestamp": "00:16",
+          "interpretation": "explicit"
+        }
+      ],
+      "decision_context": {
+        "user_provided_context": null,
+        "existing_crm_value": "Customer to confirm legal review timing",
+        "fixture_rule": "Record a concrete action when owner and deadline are explicit."
+      },
+      "reason": "A concrete action, recipient, and deadline are explicitly stated.",
+      "expected_user_action": "approve",
+      "risk_level": "medium"
+    },
+    "close_date": {
+      "outcome_state": "unable_to_determine",
+      "current_value": "2026-09-15",
+      "proposed_value": null,
+      "customer_statement_evidence": [
+        {
+          "excerpt": "Legal might finish around the middle of next month, but that is only a guess. I cannot confirm a signing date today.",
+          "speaker": "Dana Brooks",
+          "timestamp": "01:25",
+          "interpretation": "explicit"
+        }
+      ],
+      "decision_context": {
+        "user_provided_context": null,
+        "existing_crm_value": "2026-09-15",
+        "fixture_rule": "Do not assign or change a specific close date from vague timing or an unconfirmed estimate."
+      },
+      "reason": "The only timing is vague and expressly unconfirmed, so no definite close date can be selected.",
+      "expected_user_action": "intentionally_leave_unchanged",
+      "risk_level": "high"
+    },
+    "amount": {
+      "outcome_state": "conflict",
+      "current_value": {
+        "currency": "USD",
+        "value": 72000
+      },
+      "proposed_value": null,
+      "possible_values": [
+        {
+          "currency": "USD",
+          "value": 72000
+        },
+        {
+          "currency": "USD",
+          "value": 65000
+        }
+      ],
+      "customer_statement_evidence": [
+        {
+          "excerpt": "Yes, the $72,000 quote is the number operations approved.",
+          "speaker": "Dana Brooks",
+          "timestamp": "00:49",
+          "interpretation": "explicit"
+        },
+        {
+          "excerpt": "Finance sent a note this morning that our cap may actually be $65,000. I do not know yet whether operations' $72,000 approval or the finance cap will control.",
+          "speaker": "Unknown",
+          "timestamp": "Not provided",
+          "interpretation": "explicit"
+        },
+        {
+          "excerpt": "Correct. Do not treat either amount as final yet.",
+          "speaker": "Dana Brooks",
+          "timestamp": "03:19",
+          "interpretation": "explicit"
+        }
+      ],
+      "decision_context": {
+        "user_provided_context": null,
+        "existing_crm_value": {
+          "currency": "USD",
+          "value": 72000
+        },
+        "fixture_rule": "When explicit customer statements conflict about amount, show a conflict and require a user decision without preselecting a value."
+      },
+      "reason": "The transcript contains incompatible amount statements, and the customer explicitly says neither amount is final. Missing attribution on the $65,000 statement lowers confidence further.",
+      "expected_user_action": "resolve_conflict_manually_without_preselection",
+      "risk_level": "critical"
+    },
+    "notes": {
+      "outcome_state": "proposed_change",
+      "current_value": "Proposal shared. Legal review is pending; commercial amount recorded at $72,000.",
+      "proposed_value": "Priya Nair owns routing revised data-processing redlines to legal. Commercial amount is unresolved between the $72,000 operations approval and a possible $65,000 finance cap; neither is final.",
+      "customer_statement_evidence": [
+        {
+          "excerpt": "Send the revised data-processing redlines to me by Friday, August 7. I will route them to legal.",
+          "speaker": "Priya Nair",
+          "timestamp": "00:16",
+          "interpretation": "explicit"
+        },
+        {
+          "excerpt": "Correct. Do not treat either amount as final yet.",
+          "speaker": "Dana Brooks",
+          "timestamp": "03:19",
+          "interpretation": "explicit"
+        }
+      ],
+      "decision_context": {
+        "user_provided_context": null,
+        "existing_crm_value": "Proposal shared. Legal review is pending; commercial amount recorded at $72,000.",
+        "fixture_rule": "Add material process ownership or unresolved commercial facts when explicitly supported, while preserving uncertainty."
+      },
+      "reason": "The proposed note preserves the unresolved amount conflict and identifies the legal-review owner without selecting a commercial value.",
+      "expected_user_action": "approve",
+      "risk_level": "medium"
+    }
+  },
+  "expected_audit_events": [
+    {
+      "event_type": "opportunity_confirmed",
+      "actor": "internal_evaluator_as_ae",
+      "opportunity_id": "FP-DEAL-0201",
+      "expected_result": "confirmed"
+    },
+    {
+      "event_type": "field_reviewed",
+      "field": "deal_stage",
+      "user_action": "acknowledged_no_change",
+      "expected_result": "not_applied_no_change"
+    },
+    {
+      "event_type": "field_reviewed",
+      "field": "next_step",
+      "user_action": "approved",
+      "expected_result": "simulated_applied"
+    },
+    {
+      "event_type": "field_marked_unable_to_determine",
+      "field": "close_date",
+      "user_action": "intentionally_left_unchanged",
+      "expected_result": "not_applied_unresolved_value"
+    },
+    {
+      "event_type": "conflict_detected",
+      "field": "amount",
+      "user_action": "manual_decision_required",
+      "expected_result": "no_value_preselected"
+    },
+    {
+      "event_type": "field_reviewed",
+      "field": "notes",
+      "user_action": "approved",
+      "expected_result": "simulated_applied"
+    },
+    {
+      "event_type": "final_confirmation_blocked",
+      "actor": "internal_evaluator_as_ae",
+      "expected_result": "blocked_until_amount_conflict_is_resolved_or_intentionally_left_unchanged"
+    }
+  ]
+}
