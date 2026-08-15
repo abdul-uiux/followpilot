@@ -5,7 +5,8 @@ import { Suspense, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { AppSidebar } from "../components/app-sidebar";
 import { AppHeader } from "../components/app-header";
-import { meetingArchiveEvent, readMeetingArchive, type ArchivedMeeting } from "../lib/meeting-archive";
+import { useToast } from "../components/toast-provider";
+import { deleteArchivedMeeting, meetingArchiveEvent, readMeetingArchive, type ArchivedMeeting } from "../lib/meeting-archive";
 
 type Meeting = {
   id: string;
@@ -58,7 +59,7 @@ function UserRoundIcon() {
   return <svg className="h-3.5 w-3.5" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="5.15" r="2.45" stroke="currentColor" strokeWidth="1.35" /><path d="M3.35 13.1c.45-2.08 2.34-3.6 4.65-3.6s4.2 1.52 4.65 3.6" stroke="currentColor" strokeWidth="1.35" strokeLinecap="round" /></svg>;
 }
 
-function MeetingCard({ meeting, isOpen, onToggle }: { meeting: Meeting; isOpen: boolean; onToggle: (open: boolean) => void }) {
+function MeetingCard({ meeting, isOpen, onToggle, onDeleteRequest }: { meeting: Meeting; isOpen: boolean; onToggle: (open: boolean) => void; onDeleteRequest: (meeting: Meeting) => void }) {
   const isSampleMeeting = meeting.id === sampleMeeting.id;
   return (
     <article className={`overflow-hidden rounded-2xl border bg-white shadow-[0_1px_2px_rgba(0,0,0,0.025)] transition hover:border-[#c9c8c5] ${isSampleMeeting ? "sample-meeting-card" : "border-[#deddda]"}`}>
@@ -87,6 +88,7 @@ function MeetingCard({ meeting, isOpen, onToggle }: { meeting: Meeting; isOpen: 
                 <p className="mt-2 max-w-3xl text-sm leading-6 text-[#52504d]">{meeting.detail}</p>
               </div>
               <div className="flex flex-wrap gap-2 lg:justify-end">
+                {meeting.status === "Completed" && <button type="button" onClick={() => onDeleteRequest(meeting)} className="cursor-pointer rounded-lg border border-[#deddda] bg-white px-3.5 py-2 text-[13px] font-medium text-[#625f5c] transition hover:border-[#e8b4ae] hover:bg-[#fff7f6] hover:text-[#a8342a] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#f7dfdc]">Delete meeting</button>}
                 <Link href={meeting.status === "Completed" ? `/meetings/audit?id=${encodeURIComponent(meeting.id)}` : "/?sample=1"} className="rounded-lg bg-[#191919] px-3.5 py-2 text-[13px] font-medium text-white transition hover:bg-[#353535]">{meeting.status === "Completed" ? "View audit" : "Open review"} <span aria-hidden="true">→</span></Link>
               </div>
             </div>
@@ -98,6 +100,7 @@ function MeetingCard({ meeting, isOpen, onToggle }: { meeting: Meeting; isOpen: 
 }
 
 function MeetingsContent() {
+  const { showToast } = useToast();
   const isSampleView = useSearchParams().get("sample") === "1";
   const [archivedMeetings, setArchivedMeetings] = useState<ArchivedMeeting[]>([]);
   const [archiveReady, setArchiveReady] = useState(false);
@@ -116,6 +119,25 @@ function MeetingsContent() {
   const [sortMenuOpen, setSortMenuOpen] = useState(false);
   const [openMeetingId, setOpenMeetingId] = useState<string | null>(() => sampleMeeting.id);
   const [searchQuery, setSearchQuery] = useState("");
+  const [meetingPendingDeletion, setMeetingPendingDeletion] = useState<Meeting | null>(null);
+  const [isDeleteModalClosing, setIsDeleteModalClosing] = useState(false);
+
+  const closeDeleteModal = () => {
+    if (isDeleteModalClosing) return;
+    setIsDeleteModalClosing(true);
+    window.setTimeout(() => {
+      setMeetingPendingDeletion(null);
+      setIsDeleteModalClosing(false);
+    }, 180);
+  };
+
+  const confirmDelete = () => {
+    if (!meetingPendingDeletion) return;
+    deleteArchivedMeeting(meetingPendingDeletion.id);
+    setOpenMeetingId((openId) => openId === meetingPendingDeletion.id ? null : openId);
+    showToast(`“${meetingPendingDeletion.title}” was removed from FollowPilot.`);
+    closeDeleteModal();
+  };
 
   const visibleMeetings = useMemo(() => {
     const normalizedQuery = searchQuery.trim().toLowerCase();
@@ -159,9 +181,20 @@ function MeetingsContent() {
             <div className="grid grid-cols-2 divide-x divide-[#deddda] rounded-xl border border-[#deddda] bg-white"><div className="px-4 py-3"><p className="text-2xl font-semibold">{visibleMeetings.length}</p><p className="mt-0.5 text-xs text-[#787774]">{isSampleView ? "sample meeting" : filter === "all" ? "past meetings" : "matching meetings"}</p></div><div className="px-4 py-3"><p className="text-2xl font-semibold text-amber-700">{meetingSource.filter((meeting) => meeting.status === "Needs decision").length}</p><p className="mt-0.5 text-xs text-[#787774]">needs decision</p></div></div>
           </div>
           <div className="mt-9 flex flex-col gap-3 border-y border-[#e8e7e4] py-3 sm:flex-row sm:items-center sm:justify-between"><div role="group" aria-label="Filter meetings" className="flex flex-wrap gap-2">{filters.map((item) => <button key={item.key} type="button" aria-pressed={filter === item.key} onClick={() => { setFilter(item.key); setOpenMeetingId(null); }} className={filter === item.key ? "rounded-md bg-[#191919] px-3 py-1.5 text-xs font-semibold text-white" : "rounded-md px-3 py-1.5 text-xs font-medium text-[#625f5c] transition hover:bg-[#ececea] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#e9e9e7]"}>{item.label}</button>)}</div><div className="relative"><button type="button" aria-haspopup="menu" aria-expanded={sortMenuOpen} aria-controls="meeting-sort-options" onClick={() => setSortMenuOpen((open) => !open)} className="flex items-center gap-2 rounded-md border border-[#deddda] bg-white px-3 py-1.5 text-xs font-medium text-[#52504d] transition hover:border-[#9b9995] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#e9e9e7]"><span className="text-[#787774]">Sort</span>{activeSortLabel}<ChevronIcon /></button>{sortMenuOpen && <div id="meeting-sort-options" role="menu" className="absolute right-0 z-10 mt-2 w-40 overflow-hidden rounded-lg border border-[#deddda] bg-white p-1 shadow-lg">{sortOptions.map((option) => <button key={option.key} type="button" role="menuitemradio" aria-checked={sort === option.key} onClick={() => { setSort(option.key); setSortMenuOpen(false); setOpenMeetingId(null); }} className={sort === option.key ? "flex w-full items-center justify-between rounded-md bg-[#efefed] px-3 py-2 text-left text-xs font-semibold text-[#191919]" : "flex w-full items-center rounded-md px-3 py-2 text-left text-xs text-[#625f5c] hover:bg-[#f5f5f3]"}>{option.label}{sort === option.key && <span aria-hidden="true">✓</span>}</button>)}</div>}</div></div>
-          <section aria-label="Past meetings" className="mt-5 space-y-5">{visibleMeetings.length ? visiblePeriods.map((period) => { const periodMeetings = visibleMeetings.filter((meeting) => meeting.period === period); return <div key={period} className="space-y-3"><p className="px-1 text-[10px] font-semibold tracking-[0.12em] text-[#787774] uppercase">{period}</p>{periodMeetings.map((meeting) => <MeetingCard key={meeting.id} meeting={meeting} isOpen={openMeetingId === meeting.id} onToggle={(open) => setOpenMeetingId(open ? meeting.id : null)} />)}</div>; }) : <div className="rounded-2xl border border-dashed border-[#c9c8c5] bg-white px-6 py-12 text-center"><p className="text-sm font-semibold text-[#191919]">{hasActiveMeetingFilters ? "No meetings match this filter or search." : "No meetings yet."}</p>{hasActiveMeetingFilters && <button type="button" onClick={() => { setFilter("all"); setSearchQuery(""); }} className="mt-3 text-[13px] font-medium underline underline-offset-4">Clear filters</button>}</div>}</section>
+          <section aria-label="Past meetings" className="mt-5 space-y-5">{visibleMeetings.length ? visiblePeriods.map((period) => { const periodMeetings = visibleMeetings.filter((meeting) => meeting.period === period); return <div key={period} className="space-y-3"><p className="px-1 text-[10px] font-semibold tracking-[0.12em] text-[#787774] uppercase">{period}</p>{periodMeetings.map((meeting) => <MeetingCard key={meeting.id} meeting={meeting} isOpen={openMeetingId === meeting.id} onToggle={(open) => setOpenMeetingId(open ? meeting.id : null)} onDeleteRequest={(meeting) => { setIsDeleteModalClosing(false); setMeetingPendingDeletion(meeting); }} />)}</div>; }) : <div className="rounded-2xl border border-dashed border-[#c9c8c5] bg-white px-6 py-12 text-center"><p className="text-sm font-semibold text-[#191919]">{hasActiveMeetingFilters ? "No meetings match this filter or search." : "No meetings yet."}</p>{hasActiveMeetingFilters && <button type="button" onClick={() => { setFilter("all"); setSearchQuery(""); }} className="mt-3 text-[13px] font-medium underline underline-offset-4">Clear filters</button>}</div>}</section>
         </main>
       </div>
+      {meetingPendingDeletion && <div className={`fixed inset-0 z-40 grid place-items-center bg-[#191919]/20 px-5 py-8 backdrop-blur-[2px] ${isDeleteModalClosing ? "modal-backdrop-exit pointer-events-none" : "modal-backdrop-enter"}`} role="presentation" onMouseDown={closeDeleteModal}>
+        <section role="dialog" aria-modal="true" aria-labelledby="delete-meeting-title" className={`w-full max-w-md rounded-xl border border-[#deddda] bg-white p-5 shadow-[0_20px_60px_rgba(0,0,0,0.18)] sm:p-6 ${isDeleteModalClosing ? "modal-panel-exit" : "modal-panel-enter"}`} onMouseDown={(event) => event.stopPropagation()}>
+          <p className="text-xs font-semibold tracking-[0.14em] text-[#a8342a] uppercase">Remove from FollowPilot</p>
+          <h2 id="delete-meeting-title" className="mt-2 text-xl font-semibold tracking-[-0.03em]">Delete this meeting?</h2>
+          <p className="mt-3 text-sm leading-6 text-[#625f5c]">This removes <span className="font-medium text-[#191919]">“{meetingPendingDeletion.title}”</span> and its review history from FollowPilot. Any changes already applied in HubSpot will remain untouched.</p>
+          <div className="mt-6 flex justify-end gap-2">
+            <button type="button" onClick={closeDeleteModal} className="cursor-pointer rounded-md px-3 py-2 text-[13px] font-medium text-[#625f5c] transition hover:bg-[#ececea] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#e9e9e7]">Cancel</button>
+            <button type="button" onClick={confirmDelete} className="cursor-pointer rounded-md bg-[#a8342a] px-3.5 py-2 text-[13px] font-medium text-white transition hover:bg-[#8f2c23] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#f7dfdc]">Delete meeting</button>
+          </div>
+        </section>
+      </div>}
     </div>
   );
 }

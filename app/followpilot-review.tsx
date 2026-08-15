@@ -304,6 +304,15 @@ function UploadModal({
 }) {
   const [attendeeInput, setAttendeeInput] = useState("");
   const [dealMenuOpen, setDealMenuOpen] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
+  const requestClose = () => {
+    if (isAnalyzing || isClosing) return;
+    setIsClosing(true);
+    window.setTimeout(() => {
+      setIsClosing(false);
+      onClose();
+    }, 180);
+  };
   if (!open) return null;
   const attendeeNames = attendees.split(",").map((name) => name.trim()).filter(Boolean);
   const addAttendees = (value: string) => {
@@ -312,11 +321,11 @@ function UploadModal({
     setAttendeeInput("");
   };
   return (
-    <div className="fixed inset-0 z-50 flex items-end bg-black/20 p-0 sm:items-center sm:justify-center sm:p-6" role="presentation" onMouseDown={onClose}>
-      <section role="dialog" aria-modal="true" aria-labelledby="upload-title" className="max-h-[94vh] w-full max-w-2xl overflow-y-auto rounded-t-xl bg-white shadow-2xl sm:rounded-xl" onMouseDown={(event) => event.stopPropagation()}>
+    <div className={`fixed inset-0 z-50 flex items-end bg-black/20 p-0 sm:items-center sm:justify-center sm:p-6 ${isClosing ? "modal-backdrop-exit pointer-events-none" : "modal-backdrop-enter"}`} role="presentation" onMouseDown={requestClose}>
+      <section role="dialog" aria-modal="true" aria-labelledby="upload-title" className={`max-h-[94vh] w-full max-w-2xl overflow-y-auto rounded-t-xl bg-white shadow-2xl sm:rounded-xl ${isClosing ? "modal-panel-exit" : "modal-panel-enter"}`} onMouseDown={(event) => event.stopPropagation()}>
         <header className="flex items-start justify-between border-b border-[#ececea] px-6 py-5 sm:px-8">
           <div><p className="text-sm font-medium text-[#787774]">New meeting</p><h2 id="upload-title" className="mt-1 text-2xl font-semibold tracking-[-0.03em] text-[#191919]">Review a transcript</h2><p className="mt-2 text-sm leading-6 text-[#625f5c]">Add the meeting context, then review every CRM update before anything is included.</p></div>
-          <button type="button" onClick={onClose} disabled={isAnalyzing} aria-label="Close upload dialog" className="ml-4 grid h-8 w-8 shrink-0 place-items-center rounded-md text-xl text-[#787774] transition hover:bg-[#f2f2f0] hover:text-[#191919] disabled:opacity-45">×</button>
+          <button type="button" onClick={requestClose} disabled={isAnalyzing} aria-label="Close upload dialog" className="ml-4 grid h-8 w-8 shrink-0 place-items-center rounded-md text-xl text-[#787774] transition hover:bg-[#f2f2f0] hover:text-[#191919] disabled:opacity-45">×</button>
         </header>
         <div className="space-y-5 px-6 py-6 sm:px-8">
           <div className="grid gap-5 sm:grid-cols-2">
@@ -335,7 +344,7 @@ function UploadModal({
           </div>
           <label className="flex items-start gap-3 rounded-lg bg-[#f5f5f3] p-3.5 text-xs leading-5 text-[#625f5c]"><input type="checkbox" checked={authorized} onChange={(event) => setAuthorized(event.target.checked)} className="mt-0.5 h-4 w-4 rounded border-[#c9c8c5] accent-[#191919]" />I’m authorized to share this transcript.</label>
         </div>
-        <footer className="flex flex-col-reverse gap-3 border-t border-[#ececea] px-6 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-8"><p className="text-xs text-[#787774]">Approved updates go to this HubSpot deal.</p><div className="flex gap-2"><button type="button" onClick={onClose} disabled={isAnalyzing} className="rounded-md px-4 py-2.5 text-sm font-medium text-[#625f5c] transition hover:bg-[#f2f2f0] disabled:opacity-45">Cancel</button><button type="button" onClick={onAnalyze} disabled={!transcript.trim() || !authorized || !matchedContact || !selectedDealId || isAnalyzing} className="inline-flex items-center justify-center gap-2 rounded-md bg-[#191919] px-4 py-2.5 text-sm font-medium text-white transition hover:bg-[#353535] focus:outline-none focus:ring-4 focus:ring-[#d9d9d7] disabled:cursor-not-allowed disabled:opacity-45"><SparkIcon /> {isAnalyzing ? "Analyzing…" : "Analyze now"}</button></div></footer>
+        <footer className="flex flex-col-reverse gap-3 border-t border-[#ececea] px-6 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-8"><p className="text-xs text-[#787774]">Approved updates go to this HubSpot deal.</p><div className="flex gap-2"><button type="button" onClick={requestClose} disabled={isAnalyzing} className="rounded-md px-4 py-2.5 text-sm font-medium text-[#625f5c] transition hover:bg-[#f2f2f0] disabled:opacity-45">Cancel</button><button type="button" onClick={onAnalyze} disabled={!transcript.trim() || !authorized || !matchedContact || !selectedDealId || isAnalyzing} className="inline-flex items-center justify-center gap-2 rounded-md bg-[#191919] px-4 py-2.5 text-sm font-medium text-white transition hover:bg-[#353535] focus:outline-none focus:ring-4 focus:ring-[#d9d9d7] disabled:cursor-not-allowed disabled:opacity-45"><SparkIcon /> {isAnalyzing ? "Analyzing…" : "Analyze now"}</button></div></footer>
       </section>
     </div>
   );

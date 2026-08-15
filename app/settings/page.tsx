@@ -72,6 +72,7 @@ export default function SettingsPage() {
   }));
   const [isSaving, setIsSaving] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [isDeleteModalClosing, setIsDeleteModalClosing] = useState(false);
   const [confirmationName, setConfirmationName] = useState("");
   const [workspaceDeleted, setWorkspaceDeleted] = useState(false);
   const accountName = name || displayName;
@@ -97,13 +98,25 @@ export default function SettingsPage() {
     }
   };
 
+  const closeDeleteModal = (afterClose?: () => void) => {
+    if (isDeleteModalClosing) return;
+    setIsDeleteModalClosing(true);
+    window.setTimeout(() => {
+      setDeleteOpen(false);
+      setIsDeleteModalClosing(false);
+      setConfirmationName("");
+      afterClose?.();
+    }, 180);
+  };
+
   const deleteWorkspace = () => {
     if (confirmationName.trim() !== accountWorkspace) return;
-    window.localStorage.removeItem(settingsStorageKey);
-    window.sessionStorage.removeItem("followpilot-demo-authenticated");
-    setDeleteOpen(false);
-    setWorkspaceDeleted(true);
-    showToast(`“${accountWorkspace}” was deleted`);
+    closeDeleteModal(() => {
+      window.localStorage.removeItem(settingsStorageKey);
+      window.sessionStorage.removeItem("followpilot-demo-authenticated");
+      setWorkspaceDeleted(true);
+      showToast(`“${accountWorkspace}” was deleted`);
+    });
   };
 
   if (workspaceDeleted) {
@@ -138,13 +151,13 @@ export default function SettingsPage() {
 
             <section aria-labelledby="notifications-heading"><div className="mb-3"><h2 id="notifications-heading" className="text-[13px] font-semibold">Notifications</h2><p className="mt-1 text-xs text-[#787774]">Choose the moments that deserve your attention.</p></div><div className="divide-y divide-[#ececea] overflow-hidden rounded-xl border border-[#deddda] bg-white"><SettingsRow title="Meeting summaries" description="Send a concise email when a meeting review is ready."><Toggle checked={meetingSummary} onChange={setMeetingSummary} label="Meeting summaries" /></SettingsRow><SettingsRow title="Review reminders" description="Remind me when a review is waiting for a decision."><Toggle checked={reviewReminder} onChange={setReviewReminder} label="Review reminders" /></SettingsRow><SettingsRow title="Product updates" description="Occasional notes about improvements and new features."><Toggle checked={productUpdates} onChange={setProductUpdates} label="Product updates" /></SettingsRow></div></section>
 
-            <section aria-labelledby="privacy-heading"><div className="mb-3"><h2 id="privacy-heading" className="text-[13px] font-semibold">Privacy & data</h2><p className="mt-1 text-xs text-[#787774]">Clear, deliberate controls for your review history.</p></div><div className="overflow-hidden rounded-xl border border-[#deddda] bg-[#fffafa]"><SettingsRow title="Delete workspace" description="Permanently delete this demo workspace and all its review history."><button type="button" onClick={() => setDeleteOpen(true)} className="rounded-md border border-[#f1c8c3] bg-white px-3 py-2 text-[13px] font-medium text-[#a8342a] transition hover:bg-[#fff4f2]">Delete workspace</button></SettingsRow></div></section>
+            <section aria-labelledby="privacy-heading"><div className="mb-3"><h2 id="privacy-heading" className="text-[13px] font-semibold">Privacy & data</h2><p className="mt-1 text-xs text-[#787774]">Clear, deliberate controls for your review history.</p></div><div className="overflow-hidden rounded-xl border border-[#deddda] bg-[#fffafa]"><SettingsRow title="Delete workspace" description="Permanently delete this demo workspace and all its review history."><button type="button" onClick={() => { setIsDeleteModalClosing(false); setDeleteOpen(true); }} className="rounded-md border border-[#f1c8c3] bg-white px-3 py-2 text-[13px] font-medium text-[#a8342a] transition hover:bg-[#fff4f2]">Delete workspace</button></SettingsRow></div></section>
           </div>
 
           <div className="mt-10 flex justify-end border-t border-[#e8e7e4] pt-5"><button type="button" onClick={() => void saveChanges()} disabled={!hasPendingChanges || isSaving} className="rounded-md bg-[#191919] px-3.5 py-2 text-[13px] font-medium text-white transition hover:bg-[#353535] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#d9d9d7] disabled:cursor-not-allowed disabled:opacity-40">{isSaving ? "Saving…" : "Save changes"}</button></div>
         </main>
       </div>
-      {deleteOpen && <div className="fixed inset-0 z-40 grid place-items-center bg-[#191919]/20 px-5 py-8 backdrop-blur-[2px]" role="presentation"><section role="dialog" aria-modal="true" aria-labelledby="delete-workspace-title" className="w-full max-w-md rounded-xl border border-[#deddda] bg-white p-5 shadow-[0_20px_60px_rgba(0,0,0,0.18)] sm:p-6"><p className="text-xs font-semibold tracking-[0.14em] text-[#a8342a] uppercase">Permanent action</p><h2 id="delete-workspace-title" className="mt-2 text-xl font-semibold tracking-[-0.03em]">Delete “{accountWorkspace}”?</h2><p className="mt-3 text-sm leading-6 text-[#625f5c]">Deleting <span className="font-medium text-[#191919]">“{accountWorkspace}”</span> will permanently delete all workspace data, meeting reviews, and history. This cannot be undone.</p><label className="mt-5 block text-[13px] font-medium">Type <span className="font-semibold">{accountWorkspace}</span> to confirm<input value={confirmationName} onChange={(event) => setConfirmationName(event.target.value)} autoFocus className="mt-2 h-9 w-full rounded-md border border-[#deddda] bg-white px-3 text-[13px] font-normal outline-none transition focus:border-[#191919] focus:ring-4 focus:ring-[#e9e9e7]" /></label><div className="mt-6 flex justify-end gap-2"><button type="button" onClick={() => { setDeleteOpen(false); setConfirmationName(""); }} className="rounded-md px-3 py-2 text-[13px] font-medium text-[#625f5c] transition hover:bg-[#ececea]">Cancel</button><button type="button" disabled={confirmationName.trim() !== accountWorkspace} onClick={deleteWorkspace} className="rounded-md bg-[#a8342a] px-3.5 py-2 text-[13px] font-medium text-white transition hover:bg-[#8f2c23] disabled:cursor-not-allowed disabled:opacity-40">Delete workspace</button></div></section></div>}
+      {deleteOpen && <div className={`fixed inset-0 z-40 grid place-items-center bg-[#191919]/20 px-5 py-8 backdrop-blur-[2px] ${isDeleteModalClosing ? "modal-backdrop-exit pointer-events-none" : "modal-backdrop-enter"}`} role="presentation" onMouseDown={() => closeDeleteModal()}><section role="dialog" aria-modal="true" aria-labelledby="delete-workspace-title" className={`w-full max-w-md rounded-xl border border-[#deddda] bg-white p-5 shadow-[0_20px_60px_rgba(0,0,0,0.18)] sm:p-6 ${isDeleteModalClosing ? "modal-panel-exit" : "modal-panel-enter"}`} onMouseDown={(event) => event.stopPropagation()}><p className="text-xs font-semibold tracking-[0.14em] text-[#a8342a] uppercase">Permanent action</p><h2 id="delete-workspace-title" className="mt-2 text-xl font-semibold tracking-[-0.03em]">Delete “{accountWorkspace}”?</h2><p className="mt-3 text-sm leading-6 text-[#625f5c]">Deleting <span className="font-medium text-[#191919]">“{accountWorkspace}”</span> will permanently delete all workspace data, meeting reviews, and history. This cannot be undone.</p><label className="mt-5 block text-[13px] font-medium">Type <span className="font-semibold">{accountWorkspace}</span> to confirm<input value={confirmationName} onChange={(event) => setConfirmationName(event.target.value)} autoFocus className="mt-2 h-9 w-full rounded-md border border-[#deddda] bg-white px-3 text-[13px] font-normal outline-none transition focus:border-[#191919] focus:ring-4 focus:ring-[#e9e9e7]" /></label><div className="mt-6 flex justify-end gap-2"><button type="button" onClick={() => closeDeleteModal()} className="rounded-md px-3 py-2 text-[13px] font-medium text-[#625f5c] transition hover:bg-[#ececea]">Cancel</button><button type="button" disabled={confirmationName.trim() !== accountWorkspace || isDeleteModalClosing} onClick={deleteWorkspace} className="rounded-md bg-[#a8342a] px-3.5 py-2 text-[13px] font-medium text-white transition hover:bg-[#8f2c23] disabled:cursor-not-allowed disabled:opacity-40">Delete workspace</button></div></section></div>}
     </div>
   );
 }

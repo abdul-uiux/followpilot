@@ -34,3 +34,9 @@ export function saveArchivedMeeting(meeting: ArchivedMeeting) {
   window.localStorage.setItem(archiveKey, JSON.stringify(next));
   window.dispatchEvent(new Event(meetingArchiveEvent));
 }
+
+export function deleteArchivedMeeting(meetingId: string) {
+  const next = readMeetingArchive().filter((item) => item.id !== meetingId);
+  window.localStorage.setItem(archiveKey, JSON.stringify(next));
+  window.dispatchEvent(new Event(meetingArchiveEvent));
+}
