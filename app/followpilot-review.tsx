@@ -57,19 +57,18 @@ const outcomeLabels: Record<FieldResult["outcome_state"], string> = {
 };
 
 const steps: Array<{ key: FlowStep; label: string }> = [
-  { key: "dashboard", label: "Transcript" },
   { key: "intake", label: "Confirm record" },
   { key: "review", label: "Review fields" },
   { key: "summary", label: "Final check" },
-  { key: "complete", label: "Complete" },
+  { key: "complete", label: "Completed" },
 ];
 
 const stepOrder: Record<FlowStep, number> = {
-  dashboard: 0,
-  intake: 1,
-  review: 2,
-  summary: 3,
-  complete: 4,
+  dashboard: -1,
+  intake: 0,
+  review: 1,
+  summary: 2,
+  complete: 3,
 };
 
 function cx(...classes: Array<string | false | null | undefined>) {
@@ -381,13 +380,12 @@ function Progress({ step, onStepChange }: { step: FlowStep; onStepChange: (step:
   const reviewLocked = step === "complete";
 
   return (
-    <nav aria-label="Review progress" className="border-b border-[#e8e7e4] bg-white">
-      <div className="mx-auto max-w-[1480px] px-4 py-4 sm:px-6 lg:px-8">
-        <div className="mb-3 flex items-center justify-between text-xs">
+    <nav aria-label="Review progress" className="w-full border-b border-[#e8e7e4]">
+      <div className="w-full px-4 py-4 sm:px-6 lg:px-8">
+        <div className="mb-3 text-xs">
           <span className="font-medium text-[#191919]">{currentStep.label}</span>
-          <span className="text-[#787774]">Step {activeIndex + 1} of {steps.length}</span>
         </div>
-      <ol className="flex">
+      <ol className="flex w-full">
         {steps.map((item, index) => {
           const current = item.key === step;
           const complete = index < activeIndex;
@@ -432,6 +430,33 @@ function Progress({ step, onStepChange }: { step: FlowStep; onStepChange: (step:
       </ol>
       </div>
     </nav>
+  );
+}
+
+function AnalysisOverlay() {
+  const messages = [
+    "FollowPilot is matching the connected HubSpot record.",
+    "Preparing evidence-backed suggestions.",
+    "Nothing will be changed automatically.",
+  ];
+  const [messageIndex, setMessageIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = window.setInterval(() => setMessageIndex((current) => (current + 1) % messages.length), 1800);
+    return () => window.clearInterval(interval);
+  }, [messages.length]);
+
+  return (
+    <div className="fixed inset-0 z-50 grid place-items-center bg-[#f7f7f5]/65 px-5 py-8 backdrop-blur-md" role="status" aria-live="polite" aria-label="Preparing your review">
+      <section className="w-full max-w-md text-center">
+        <div className="mx-auto grid h-14 w-14 place-items-center rounded-full border border-[#deddda] bg-white/90 shadow-[0_10px_28px_rgba(25,25,25,0.09)]">
+          <span className="h-7 w-7 rounded-full border-2 border-[#deddda] border-t-[#191919] animate-spin" aria-hidden="true" />
+        </div>
+        <p className="mt-7 text-xs font-semibold tracking-[0.14em] text-[#52504d] uppercase">Preparing your review</p>
+        <h1 className="mt-2 text-2xl font-semibold tracking-[-0.035em] text-[#191919]">Analyzing the meeting details.</h1>
+        <p key={messageIndex} className="analysis-status-copy mx-auto mt-3 max-w-sm text-sm leading-6 text-[#625f5c]">{messages[messageIndex]}</p>
+      </section>
+    </div>
   );
 }
 
@@ -878,7 +903,7 @@ export default function FollowPilotReview({
     if (!transcript.trim() || !hubSpotConnection.connected || !matchedContact || !selectedDealId) return;
     setIsAnalyzing(true);
     setUploadOpen(false);
-    setStep("review");
+    setStep("intake");
     try {
       const response = await fetch("/api/reviews/analyze", {
         method: "POST",
@@ -1116,16 +1141,7 @@ export default function FollowPilotReview({
         </div>
       )}
 
-      {step === "review" && isAnalyzing && (
-        <div className="mx-auto flex min-h-[calc(100vh-11rem)] max-w-3xl items-center px-5 py-12 sm:px-8">
-          <section className="w-full rounded-2xl border border-[#deddda] bg-white p-8 text-center shadow-[0_1px_2px_rgba(0,0,0,0.03)] sm:p-12">
-            <div className="mx-auto grid h-11 w-11 place-items-center rounded-full border-2 border-[#deddda] border-t-[#191919] animate-spin" aria-hidden="true" />
-            <p className="mt-7 text-xs font-semibold tracking-[0.14em] text-[#787774] uppercase">Preparing your review</p>
-            <h1 className="mt-2 text-2xl font-semibold tracking-[-0.035em] sm:text-3xl">Analyzing the meeting details.</h1>
-            <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-[#625f5c]">FollowPilot is matching the connected HubSpot record and preparing evidence-backed suggestions. Nothing will be changed automatically.</p>
-          </section>
-        </div>
-      )}
+      {isAnalyzing && <AnalysisOverlay />}
 
       {step === "review" && !isAnalyzing && (
         <div className="mx-auto max-w-[1480px] px-4 py-8 sm:px-6 lg:px-8">

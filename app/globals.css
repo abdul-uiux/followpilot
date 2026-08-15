@@ -106,6 +106,13 @@ button:disabled {
 .modal-panel-enter { animation: modal-panel-in 180ms linear both; }
 .modal-panel-exit { animation: modal-panel-out 180ms linear both; }
 
+@keyframes analysis-status-in {
+  from { opacity: 0; transform: translateY(3px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.analysis-status-copy { animation: analysis-status-in 180ms linear both; }
+
 
 input,
 select,
