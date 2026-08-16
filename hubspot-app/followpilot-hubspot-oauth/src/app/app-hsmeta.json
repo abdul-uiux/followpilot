@@ -8,7 +8,7 @@
     "auth": {
       "type": "oauth",
       "redirectUrls": [
-        "http://localhost:3000/api/hubspot/callback"
+        "https://followpilot-abdul.vercel.app/api/hubspot/callback"
       ],
       "requiredScopes": [
         "oauth",
