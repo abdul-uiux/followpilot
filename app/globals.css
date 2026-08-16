@@ -113,6 +113,18 @@ button:disabled {
 
 .analysis-status-copy { animation: analysis-status-in 180ms linear both; }
 
+.analysis-loading-dots > span {
+  animation: analysis-dot-pulse 1.8s linear infinite;
+}
+
+.analysis-loading-dots > span:nth-child(2) { animation-delay: 260ms; }
+.analysis-loading-dots > span:nth-child(3) { animation-delay: 520ms; }
+
+@keyframes analysis-dot-pulse {
+  0%, 25%, 100% { opacity: 0.2; }
+  40%, 70% { opacity: 1; }
+}
+
 
 input,
 select,

@@ -435,9 +435,9 @@ function Progress({ step, onStepChange }: { step: FlowStep; onStepChange: (step:
 
 function AnalysisOverlay() {
   const messages = [
-    "FollowPilot is matching the connected HubSpot record.",
-    "Preparing evidence-backed suggestions.",
-    "Nothing will be changed automatically.",
+    "FollowPilot is matching the connected HubSpot record",
+    "Preparing evidence-backed suggestions",
+    "Nothing will be changed automatically",
   ];
   const [messageIndex, setMessageIndex] = useState(0);
 
@@ -454,7 +454,7 @@ function AnalysisOverlay() {
         </div>
         <p className="mt-7 text-xs font-semibold tracking-[0.14em] text-[#52504d] uppercase">Preparing your review</p>
         <h1 className="mt-2 text-2xl font-semibold tracking-[-0.035em] text-[#191919]">Analyzing the meeting details.</h1>
-        <p key={messageIndex} className="analysis-status-copy mx-auto mt-3 max-w-sm text-sm leading-6 text-[#625f5c]">{messages[messageIndex]}</p>
+        <p key={messageIndex} className="analysis-status-copy mx-auto mt-3 max-w-sm text-sm leading-6 text-[#625f5c]">{messages[messageIndex]}<span className="analysis-loading-dots" aria-hidden="true"><span>.</span><span>.</span><span>.</span></span></p>
       </section>
     </div>
   );
