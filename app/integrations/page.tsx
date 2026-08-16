@@ -37,11 +37,23 @@ export default function IntegrationsPage() {
     };
     void loadConnection();
 
+    // OAuth completes in a separate tab. Re-check the secure cookie when the
+    // user returns here, so the original tab immediately reflects the result.
+    const refreshOnReturn = () => {
+      if (document.visibilityState === "visible") void loadConnection();
+    };
+    window.addEventListener("focus", refreshOnReturn);
+    document.addEventListener("visibilitychange", refreshOnReturn);
+
     const result = new URLSearchParams(window.location.search).get("hubspot");
     if (result === "connected") showToast("HubSpot connected");
     if (result === "error") showToast("HubSpot connection could not be completed", "error");
     if (result) window.history.replaceState(null, "", "/integrations");
-    return () => { active = false; };
+    return () => {
+      active = false;
+      window.removeEventListener("focus", refreshOnReturn);
+      document.removeEventListener("visibilitychange", refreshOnReturn);
+    };
   }, [showToast]);
 
   const disconnect = async () => {

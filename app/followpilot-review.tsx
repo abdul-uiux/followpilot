@@ -768,7 +768,20 @@ export default function FollowPilotReview({
       }
     };
     void loadConnection();
-    return () => { active = false; };
+
+    // The connection flow opens HubSpot in a new tab. Its token is stored in
+    // a secure cookie on this origin, so refresh once this tab regains focus.
+    const refreshOnReturn = () => {
+      if (document.visibilityState === "visible") void loadConnection();
+    };
+    window.addEventListener("focus", refreshOnReturn);
+    document.addEventListener("visibilitychange", refreshOnReturn);
+
+    return () => {
+      active = false;
+      window.removeEventListener("focus", refreshOnReturn);
+      document.removeEventListener("visibilitychange", refreshOnReturn);
+    };
   }, [isAuthenticated]);
 
   const addAudit = (event: string, detail: string, result: string) => {
