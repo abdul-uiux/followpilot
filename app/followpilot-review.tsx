@@ -376,15 +376,11 @@ function RiskPill({ risk }: { risk: RiskLevel }) {
 
 function Progress({ step, onStepChange }: { step: FlowStep; onStepChange: (step: FlowStep) => void }) {
   const activeIndex = stepOrder[step];
-  const currentStep = steps[activeIndex];
   const reviewLocked = step === "complete";
 
   return (
     <nav aria-label="Review progress" className="w-full border-b border-[#e8e7e4]">
       <div className="w-full px-4 py-4 sm:px-6 lg:px-8">
-        <div className="mb-3 text-xs">
-          <span className="font-medium text-[#191919]">{currentStep.label}</span>
-        </div>
       <ol className="flex w-full">
         {steps.map((item, index) => {
           const current = item.key === step;
