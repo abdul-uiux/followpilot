@@ -6,7 +6,8 @@ import { useSearchParams } from "next/navigation";
 import { AppSidebar } from "../components/app-sidebar";
 import { AppHeader } from "../components/app-header";
 import { useToast } from "../components/toast-provider";
-import { deleteArchivedMeeting, meetingArchiveEvent, readMeetingArchive, type ArchivedMeeting } from "../lib/meeting-archive";
+import { meetingArchiveEvent, readMeetingArchive, removeArchivedMeeting, syncArchivedMeetings, type ArchivedMeeting } from "../lib/meeting-archive";
+import { useAuth } from "../components/auth-provider";
 
 type Meeting = {
   id: string;
@@ -101,6 +102,7 @@ function MeetingCard({ meeting, isOpen, onToggle, onDeleteRequest }: { meeting: 
 
 function MeetingsContent() {
   const { showToast } = useToast();
+  const { user } = useAuth();
   const isSampleView = useSearchParams().get("sample") === "1";
   const [archivedMeetings, setArchivedMeetings] = useState<ArchivedMeeting[]>([]);
   const [archiveReady, setArchiveReady] = useState(false);
@@ -110,9 +112,10 @@ function MeetingsContent() {
       setArchiveReady(true);
     };
     updateMeetings();
+    if (user) void syncArchivedMeetings(user.uid).catch(updateMeetings);
     window.addEventListener(meetingArchiveEvent, updateMeetings);
     return () => window.removeEventListener(meetingArchiveEvent, updateMeetings);
-  }, []);
+  }, [user]);
   const meetingSource = useMemo<Meeting[]>(() => !archiveReady ? [] : archivedMeetings.length ? archivedMeetings : [sampleMeeting], [archiveReady, archivedMeetings]);
   const [filter, setFilter] = useState<"all" | "needs-decision" | "completed">("all");
   const [sort, setSort] = useState<"recent" | "oldest" | "status">("recent");
@@ -133,7 +136,9 @@ function MeetingsContent() {
 
   const confirmDelete = () => {
     if (!meetingPendingDeletion) return;
-    deleteArchivedMeeting(meetingPendingDeletion.id);
+    if (user) void removeArchivedMeeting(user.uid, meetingPendingDeletion.id).catch(() => {
+      showToast("Meeting was removed on this device but could not be synced.", "error");
+    });
     setOpenMeetingId((openId) => openId === meetingPendingDeletion.id ? null : openId);
     showToast(`“${meetingPendingDeletion.title}” was removed from FollowPilot.`);
     closeDeleteModal();

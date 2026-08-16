@@ -4,16 +4,25 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { AppHeader } from "../../components/app-header";
 import { AppSidebar } from "../../components/app-sidebar";
-import { readMeetingArchive, type ArchivedMeeting } from "../../lib/meeting-archive";
+import { readMeetingArchive, syncArchivedMeetings, type ArchivedMeeting } from "../../lib/meeting-archive";
+import { useAuth } from "../../components/auth-provider";
 
 export default function AuditClient({ meetingId }: { meetingId: string | null }) {
+  const { user } = useAuth();
   const [meeting, setMeeting] = useState<ArchivedMeeting | null>(null);
 
   useEffect(() => {
-    const archive = readMeetingArchive();
-    const timeout = window.setTimeout(() => setMeeting(archive.find((item) => item.id === meetingId) ?? null), 0);
-    return () => window.clearTimeout(timeout);
-  }, [meetingId]);
+    let active = true;
+    const loadMeeting = async () => {
+      try {
+        if (user) await syncArchivedMeetings(user.uid);
+      } finally {
+        if (active) setMeeting(readMeetingArchive().find((item) => item.id === meetingId) ?? null);
+      }
+    };
+    void loadMeeting();
+    return () => { active = false; };
+  }, [meetingId, user]);
 
   const changes = meeting?.changes ?? [];
   const auditEntries = meeting?.audit?.length ? meeting.audit : meeting ? [

@@ -8,7 +8,7 @@ import { AppHeader } from "./components/app-header";
 import { useToast } from "./components/toast-provider";
 import { firebaseAuth, firebaseIsConfigured } from "./lib/firebase";
 import { readHubSpotStatus, saveHubSpotStatus } from "./lib/hubspot-status-cache";
-import { readMeetingArchive, saveArchivedMeeting, type ArchivedMeeting } from "./lib/meeting-archive";
+import { persistArchivedMeeting, readMeetingArchive, syncArchivedMeetings, type ArchivedMeeting } from "./lib/meeting-archive";
 import { useAuth } from "./components/auth-provider";
 import {
   fieldKeys,
@@ -743,9 +743,10 @@ export default function FollowPilotReview({
   useEffect(() => {
     const updateMeetings = () => setRecentMeetings(readMeetingArchive());
     updateMeetings();
+    if (user) void syncArchivedMeetings(user.uid).catch(updateMeetings);
     window.addEventListener("followpilot:meeting-archive-updated", updateMeetings);
     return () => window.removeEventListener("followpilot:meeting-archive-updated", updateMeetings);
-  }, []);
+  }, [user]);
 
   const completeAuthentication = (signedUp: boolean) => {
     if (signedUp) router.push("/onboarding");
@@ -870,7 +871,7 @@ export default function FollowPilotReview({
     const now = new Date();
     const selectedDeal = matchedContact.deals.find((deal) => deal.id === selectedDealId);
     const count = approvedChanges.length;
-    saveArchivedMeeting({
+    const meeting = {
       id: `meeting-${Date.now()}`,
       title: meetingTitle.trim() || "Customer meeting",
       company: selectedDeal?.name || matchedContact.name,
@@ -886,6 +887,9 @@ export default function FollowPilotReview({
       changes: approvedChanges.map((change) => ({ field: change.label, before: formatValue(change.before), after: change.after })),
       sortDate: now.valueOf(),
       period: "This week",
+    } satisfies ArchivedMeeting;
+    if (user) void persistArchivedMeeting(user.uid, meeting).catch(() => {
+      showToast("Meeting saved on this device. Enable Firestore to sync it everywhere.", "error");
     });
   };
 
