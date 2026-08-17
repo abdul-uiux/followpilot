@@ -70,17 +70,16 @@ export async function syncArchivedMeetings(userId: string) {
   if (!firebaseDb || !userId) return readMeetingArchive();
   const meetingsRef = collection(firebaseDb, "users", userId, "meetings");
   const snapshot = await getDocs(query(meetingsRef, orderBy("sortDate", "desc")));
-  let meetings = snapshot.docs.map((item) => asArchivedMeeting(item.id, item.data())).filter((item): item is ArchivedMeeting => item !== null);
+  const cloudMeetings = snapshot.docs.map((item) => asArchivedMeeting(item.id, item.data())).filter((item): item is ArchivedMeeting => item !== null);
+  const cloudIds = new Set(cloudMeetings.map((meeting) => meeting.id));
+  const localOnlyMeetings = readMeetingArchive().filter((meeting) => !cloudIds.has(meeting.id));
 
-  // Preserve reviews made before Firestore was enabled by migrating this
-  // browser's local archive the first time its cloud archive is empty.
-  if (!meetings.length) {
-    const localMeetings = readMeetingArchive();
-    if (localMeetings.length) {
-      await Promise.all(localMeetings.map((meeting) => setDoc(doc(meetingsRef, meeting.id), meeting)));
-      meetings = localMeetings;
-    }
+  // Preserve reviews made before Firestore was enabled. This merges the
+  // browser archive without replacing cloud records already written elsewhere.
+  if (localOnlyMeetings.length) {
+    await Promise.all(localOnlyMeetings.map((meeting) => setDoc(doc(meetingsRef, meeting.id), meeting)));
   }
+  const meetings = [...cloudMeetings, ...localOnlyMeetings].sort((a, b) => b.sortDate - a.sortDate);
 
   saveLocalArchive(meetings);
   return meetings;
