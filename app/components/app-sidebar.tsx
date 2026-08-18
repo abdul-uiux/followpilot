@@ -27,7 +27,7 @@ export function AppSidebar({ activePage }: AppSidebarProps) {
         {navItems.map((item) => {
           const isActive = item.key === activePage;
           const className = `flex items-center gap-3 rounded-md px-3 py-2 transition ${isActive ? "bg-[#e9e9e7] font-medium text-[#191919] hover:text-[#191919]" : "text-[#625f5c] hover:bg-[#efefed] hover:text-[#191919]"}`;
-          const contents = <><span aria-hidden="true" className="h-6 w-6 shrink-0 bg-current [mask-position:center] [mask-repeat:no-repeat] [mask-size:contain] [-webkit-mask-position:center] [-webkit-mask-repeat:no-repeat] [-webkit-mask-size:contain]" style={{ maskImage: `url(${item.icon})`, WebkitMaskImage: `url(${item.icon})` }} />{item.label}</>;
+          const contents = <><span aria-hidden="true" className="h-5 w-5 shrink-0 bg-current [mask-position:center] [mask-repeat:no-repeat] [mask-size:contain] [-webkit-mask-position:center] [-webkit-mask-repeat:no-repeat] [-webkit-mask-size:contain]" style={{ maskImage: `url(${item.icon})`, WebkitMaskImage: `url(${item.icon})` }} />{item.label}</>;
 
           return item.href.startsWith("#") ? (
             <a key={item.key} href={item.href} className={className}>{contents}</a>

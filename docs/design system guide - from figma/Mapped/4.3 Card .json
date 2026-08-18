@@ -1,0 +1,14 @@
+{
+  "card.bg":                  "{color.bg.surface}",
+  "card.border":              "{color.border.subtle}",
+  "card.radius":              "{radius.component.lg}",
+  "card.padding":             "{space.inset.lg}",
+  "card.shadow":              "{elevation.low}",
+  "card.title.font":          "{type.heading.sm}",
+  "card.title.color":         "{color.text.primary}",
+  "card.body.font":           "{type.body.md}",
+  "card.body.color":          "{color.text.tertiary}",
+  "card.meta.font":           "{type.body.sm}",
+  "card.meta.color":          "{color.text.secondary}",
+  "card.gap":                 "{space.stack.sm}"
+}

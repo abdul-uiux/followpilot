@@ -1,0 +1,101 @@
+{
+  "type.display": {
+    "size": "{font.size.6xl}",
+    "weight": "{font.weight.bold}",
+    "lineHeight": "{font.lineHeight.tight}",
+    "tracking": "{font.tracking.tightest}",
+    "usage": "Hero headings (36px Bold)"
+  },
+  "type.heading.xl": {
+    "size": "{font.size.5xl}",
+    "weight": "{font.weight.bold}",
+    "lineHeight": "{font.lineHeight.tight}",
+    "tracking": "{font.tracking.tighter}",
+    "usage": "Page-level titles (30px Bold)"
+  },
+  "type.heading.lg": {
+    "size": "{font.size.3xl}",
+    "weight": "{font.weight.semibold}",
+    "lineHeight": "{font.lineHeight.snug}",
+    "tracking": "{font.tracking.tight}",
+    "usage": "Section headings (24px SemiBold)"
+  },
+  "type.heading.md": {
+    "size": "{font.size.2xl}",
+    "weight": "{font.weight.semibold}",
+    "lineHeight": "{font.lineHeight.snug}",
+    "tracking": "{font.tracking.tight}",
+    "usage": "Sub-section headings (20px SemiBold)"
+  },
+  "type.heading.sm": {
+    "size": "{font.size.xl}",
+    "weight": "{font.weight.semibold}",
+    "lineHeight": "{font.lineHeight.snug}",
+    "tracking": "{font.tracking.normal}",
+    "usage": "Card/dialog titles (18px SemiBold)"
+  },
+  "type.body.lg": {
+    "size": "{font.size.lg}",
+    "weight": "{font.weight.regular}",
+    "lineHeight": "{font.lineHeight.normal}",
+    "tracking": "{font.tracking.normal}",
+    "usage": "Lead paragraphs (16px Regular)"
+  },
+  "type.body.md": {
+    "size": "{font.size.md}",
+    "weight": "{font.weight.regular}",
+    "lineHeight": "{font.lineHeight.normal}",
+    "tracking": "{font.tracking.normal}",
+    "usage": "Default body text (14px Regular)"
+  },
+  "type.body.sm": {
+    "size": "{font.size.sm}",
+    "weight": "{font.weight.regular}",
+    "lineHeight": "{font.lineHeight.normal}",
+    "tracking": "{font.tracking.none}",
+    "usage": "Metadata, captions, table cells (12px Regular)"
+  },
+  "type.label.lg": {
+    "size": "{font.size.md}",
+    "weight": "{font.weight.medium}",
+    "lineHeight": "{font.lineHeight.normal}",
+    "tracking": "{font.tracking.none}",
+    "usage": "Form labels, nav items (14px Medium)"
+  },
+  "type.label.md": {
+    "size": "{font.size.sm+}",
+    "weight": "{font.weight.medium}",
+    "lineHeight": "{font.lineHeight.normal}",
+    "tracking": "{font.tracking.none}",
+    "usage": "Button text, control labels (13px Medium)"
+  },
+  "type.label.sm": {
+    "size": "{font.size.sm}",
+    "weight": "{font.weight.medium}",
+    "lineHeight": "{font.lineHeight.normal}",
+    "tracking": "{font.tracking.none}",
+    "usage": "Small labels, badge text (12px Medium)"
+  },
+  "type.overline": {
+    "size": "{font.size.xs}",
+    "weight": "{font.weight.semibold}",
+    "lineHeight": "{font.lineHeight.normal}",
+    "tracking": "{font.tracking.wide}",
+    "usage": "Category kickers, section tags (11px SemiBold, uppercase)"
+  },
+  "type.caption": {
+    "size": "{font.size.2xs}",
+    "weight": "{font.weight.regular}",
+    "lineHeight": "{font.lineHeight.normal}",
+    "tracking": "{font.tracking.none}",
+    "usage": "Fine print, timestamps (10px Regular)"
+  },
+  "type.code": {
+    "family": "{font.family.code}",
+    "size": "{font.size.sm}",
+    "weight": "{font.weight.regular}",
+    "lineHeight": "{font.lineHeight.normal}",
+    "tracking": "{font.tracking.none}",
+    "usage": "Code snippets, emails, IDs (12px SFMono)"
+  }
+}

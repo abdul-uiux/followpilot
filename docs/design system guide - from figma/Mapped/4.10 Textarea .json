@@ -1,0 +1,11 @@
+{
+  "textarea.bg":              "{color.bg.surface}",
+  "textarea.border":          "{color.border.default}",
+  "textarea.border-focus":    "{color.border.focus}",
+  "textarea.radius":          "{radius.component.md}",
+  "textarea.padding":         "{space.inset.md}",
+  "textarea.text.font":       "{type.body.md}",
+  "textarea.text.color":      "{color.text.primary}",
+  "textarea.placeholder":     "{color.text.placeholder}",
+  "textarea.min-height":      "120px"
+}

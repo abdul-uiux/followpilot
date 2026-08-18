@@ -1,0 +1,48 @@
+{
+  "color.neutral.0": "#FFFFFF",
+  "color.neutral.50": "#FBFBFA",
+  "color.neutral.100": "#FAFAF9",
+  "color.neutral.150": "#F7F7F5",
+  "color.neutral.200": "#ECECEA",
+  "color.neutral.250": "#E9E9E7",
+  "color.neutral.300": "#E8E7E4",
+  "color.neutral.400": "#DEDDDA",
+  "color.neutral.500": "#C9C8C5",
+  "color.neutral.600": "#9B9995",
+  "color.neutral.700": "#787774",
+  "color.neutral.800": "#625F5C",
+  "color.neutral.850": "#52504D",
+  "color.neutral.900": "#191919",
+  "color.neutral.1000": "#000000",
+
+  "color.green.50": "#ECFDF5",
+  "color.green.300": "#A4F4CF",
+  "color.green.500": "#009966",
+  "color.green.600": "#007A55",
+  "color.green.700": "#006045",
+  "color.green.800": "#002C22",
+
+  "color.red.50": "#FFFAFA",
+  "color.red.600": "#A8342A",
+
+  "color.orange.600": "#BB4D00",
+
+  "color.blue.50": "#EFF6FF",
+  "color.blue.500": "#0069A8",
+  "color.blue.600": "#193CB8",
+
+  "color.slate.50": "#F8FAFC",
+  "color.slate.100": "#F1F5F9",
+  "color.slate.200": "#E2E8F0",
+  "color.slate.300": "#CAD5E2",
+  "color.slate.400": "#90A1B9",
+  "color.slate.500": "#62748E",
+  "color.slate.600": "#45556C",
+  "color.slate.700": "#314158",
+  "color.slate.800": "#1D293D",
+  "color.slate.900": "#052F4A",
+  "color.slate.950": "#020618"
+}
+
+
+Note — warm-gray identity: The neutral ramp has a deliberate warm/stone undertone. Do not substitute cool grays or blue-grays.

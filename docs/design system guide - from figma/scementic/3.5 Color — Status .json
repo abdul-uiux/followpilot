@@ -1,0 +1,10 @@
+{
+  "color.status.success.bg":     "{color.green.50}",
+  "color.status.success.text":   "{color.green.600}",
+  "color.status.success.border": "{color.green.300}",
+  "color.status.danger.bg":      "{color.red.50}",
+  "color.status.danger.text":    "{color.red.600}",
+  "color.status.warning.text":   "{color.orange.600}",
+  "color.status.info.bg":        "{color.blue.50}",
+  "color.status.info.text":      "{color.blue.500}"
+}

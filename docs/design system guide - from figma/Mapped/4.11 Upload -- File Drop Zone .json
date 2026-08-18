@@ -1,0 +1,10 @@
+{
+  "upload.bg":                "{color.bg.surface-raised}",
+  "upload.border":            "{color.border.default}",
+  "upload.border-style":      "dashed",
+  "upload.radius":            "{radius.component.md}",
+  "upload.padding":           "{space.inset.lg}",
+  "upload.text.font":         "{type.label.lg}",
+  "upload.text.color":        "{color.text.secondary}",
+  "upload.icon.color":        "{color.text.placeholder}"
+}

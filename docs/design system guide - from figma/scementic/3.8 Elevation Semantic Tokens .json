@@ -1,0 +1,8 @@
+{
+  "elevation.none":    "{shadow.none}",
+  "elevation.low":     "{shadow.sm}",
+  "elevation.mid":     "{shadow.md}",
+  "elevation.high":    "{shadow.lg}",
+  "elevation.highest": "{shadow.xl}",
+  "elevation.overlay": "{shadow.overlay}"
+}

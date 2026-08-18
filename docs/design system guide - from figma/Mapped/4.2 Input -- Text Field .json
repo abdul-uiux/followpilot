@@ -1,0 +1,20 @@
+{
+  "input.bg":                 "{color.bg.surface}",
+  "input.bg-disabled":        "{color.bg.surface-muted}",
+  "input.text":               "{color.text.primary}",
+  "input.placeholder":        "{color.text.placeholder}",
+  "input.border":             "{color.border.default}",
+  "input.border-hover":       "{color.border.strong}",
+  "input.border-focus":       "{color.border.focus}",
+  "input.border-error":       "{color.border.danger}",
+  "input.radius":             "{radius.component.md}",
+  "input.height":             "{layout.control.height.md}",
+  "input.padding.x":          "{space.inset.md}",
+  "input.padding.y":          "{space.inset.sm}",
+  "input.label.font":         "{type.label.lg}",
+  "input.label.color":        "{color.text.primary}",
+  "input.value.font":         "{type.body.md}",
+  "input.helper.font":        "{type.body.sm}",
+  "input.helper.color":       "{color.text.placeholder}",
+  "input.error.color":        "{color.text.danger}"
+}

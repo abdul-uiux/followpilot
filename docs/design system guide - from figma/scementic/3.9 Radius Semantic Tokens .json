@@ -1,0 +1,8 @@
+{
+  "radius.component.xs":  "{radius.2xs}",
+  "radius.component.sm":  "{radius.xs}",
+  "radius.component.md":  "{radius.md}",
+  "radius.component.lg":  "{radius.lg}",
+  "radius.component.xl":  "{radius.xl}",
+  "radius.component.pill": "{radius.full}"
+}

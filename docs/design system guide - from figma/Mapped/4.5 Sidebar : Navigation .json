@@ -1,0 +1,18 @@
+{
+  "nav.bg":                   "{color.bg.surface}",
+  "nav.width.expanded":       "{layout.sidebar.expanded}",
+  "nav.width.compact":        "{layout.sidebar.compact}",
+  "nav.padding":              "{space.inset.sm}",
+  "nav.border":               "{color.border.subtle}",
+
+  "nav.item.text":            "{color.text.secondary}",
+  "nav.item.text-active":     "{color.text.primary}",
+  "nav.item.bg-active":       "{color.bg.surface-strong}",
+  "nav.item.bg-hover":        "{color.bg.surface-raised}",
+  "nav.item.font":            "{type.label.lg}",
+  "nav.item.radius":          "{radius.component.md}",
+  "nav.item.padding.x":       "{space.inset.md}",
+  "nav.item.padding.y":       "{space.inset.sm}",
+  "nav.item.gap":             "{space.stack.xs}",
+  "nav.item.icon-size":       "20px"
+}

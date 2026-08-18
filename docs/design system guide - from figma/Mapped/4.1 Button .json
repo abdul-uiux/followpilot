@@ -1,0 +1,35 @@
+{
+  "button.primary.bg":               "{color.interactive.primary}",
+  "button.primary.bg-hover":         "{color.interactive.primary-hover}",
+  "button.primary.text":             "{color.text.inverse}",
+  "button.primary.border":           "none",
+
+  "button.secondary.bg":             "{color.interactive.secondary}",
+  "button.secondary.bg-hover":       "{color.interactive.secondary-hover}",
+  "button.secondary.text":           "{color.text.primary}",
+  "button.secondary.border":         "{color.border.default}",
+
+  "button.tertiary.bg":              "{color.interactive.tertiary}",
+  "button.tertiary.bg-hover":        "{color.interactive.tertiary-hover}",
+  "button.tertiary.text":            "{color.text.secondary}",
+  "button.tertiary.border":          "none",
+
+  "button.ghost.bg":                 "transparent",
+  "button.ghost.bg-hover":           "{color.interactive.secondary-hover}",
+  "button.ghost.text":               "{color.text.secondary}",
+
+  "button.danger.bg":                "{color.interactive.danger}",
+  "button.danger.bg-hover":          "{color.interactive.danger-hover}",
+  "button.danger.text":              "{color.text.inverse}",
+
+  "button.radius":                   "{radius.component.md}",
+  "button.font":                     "{type.label.md}",
+  "button.height.sm":                "{layout.control.height.sm}",
+  "button.height.md":                "{layout.control.height.md}",
+  "button.height.lg":                "{layout.control.height.lg}",
+  "button.padding.x":                "{space.inset.lg}",
+  "button.padding.y":                "{space.inset.sm}",
+  "button.gap":                      "{space.inline.sm}",
+  "button.disabled.opacity":         "{opacity.disabled}",
+  "button.focus.border":             "{color.border.focus}"
+}

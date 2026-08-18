@@ -1,0 +1,16 @@
+Migration priority
+Priority	Action
+P0	Create primitives.css — all color, spacing, radius, shadow, type primitives
+P0	Create semantic-light.css — map every semantic token to its primitive
+P0	Create components.css — Button, Input, Card (appear on every screen)
+P1	Migrate Modal, Badge, Nav, Table, Menu, Header component tokens
+P1	Replace all raw hex values page-by-page with var(--fp-...) references
+P2	Add semantic-dark.css (same names, different primitive mappings)
+P2	Add component metadata for documentation
+Rules
+Never skip tiers. Pages → component tokens → semantic tokens → primitives
+Theme-stable names — no light- or dark- in token names
+Warm-gray neutrals only — no Tailwind gray/zinc/slate substitutes for main UI
+Monochrome primary — #191919 is the primary action color, not blue
+Honor prefers-reduced-motion
+WCAG 4.5:1 contrast for normal text, 3:1 for large text and controls

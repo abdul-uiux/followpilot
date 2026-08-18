@@ -1,0 +1,21 @@
+{
+  "badge.radius":             "{radius.component.pill}",
+  "badge.font":               "{type.label.sm}",
+  "badge.padding.x":          "{space.inline.md}",
+  "badge.padding.y":          "{space.inline.xs}",
+
+  "badge.success.bg":         "{color.status.success.bg}",
+  "badge.success.text":       "{color.status.success.text}",
+  "badge.success.border":     "{color.status.success.border}",
+
+  "badge.danger.bg":          "{color.status.danger.bg}",
+  "badge.danger.text":        "{color.status.danger.text}",
+
+  "badge.warning.text":       "{color.status.warning.text}",
+
+  "badge.info.bg":            "{color.status.info.bg}",
+  "badge.info.text":          "{color.status.info.text}",
+
+  "badge.neutral.bg":         "{color.bg.surface-strong}",
+  "badge.neutral.text":       "{color.text.secondary}"
+}

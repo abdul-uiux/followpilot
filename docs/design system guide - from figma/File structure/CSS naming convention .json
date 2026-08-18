@@ -1,0 +1,30 @@
+/* primitives.css */
+:root {
+  --fp-color-neutral-0: #FFFFFF;
+  --fp-color-neutral-50: #FBFBFA;
+  --fp-color-neutral-150: #F7F7F5;
+  --fp-spacing-1: 4px;
+  --fp-spacing-2: 8px;
+  --fp-radius-md: 8px;
+  --fp-shadow-sm: 0px 1px 2px 0px rgba(0, 0, 0, 0.03);
+}
+
+/* semantic-light.css */
+:root, [data-theme="light"] {
+  --fp-color-bg-page: var(--fp-color-neutral-150);
+  --fp-color-bg-surface: var(--fp-color-neutral-0);
+  --fp-color-text-primary: var(--fp-color-neutral-900);
+  --fp-color-interactive-primary: var(--fp-color-neutral-900);
+}
+
+/* components.css */
+.fp-button-primary {
+  background: var(--fp-color-interactive-primary);
+  color: var(--fp-color-text-inverse);
+  border-radius: var(--fp-radius-component-md);
+  height: var(--fp-layout-control-height-md);
+}
+
+
+All tokens use --fp- prefix. Tier references use var():
+

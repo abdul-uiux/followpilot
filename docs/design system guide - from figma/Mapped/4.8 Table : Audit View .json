@@ -1,0 +1,16 @@
+{
+  "table.header.bg":          "{color.slate.100}",
+  "table.header.text":        "{color.slate.500}",
+  "table.header.font":        "{type.label.sm}",
+
+  "table.row.bg":             "{color.bg.surface}",
+  "table.row.bg-alt":         "{color.slate.50}",
+  "table.row.border":         "{color.slate.200}",
+  "table.row.hover":          "{color.bg.surface-raised}",
+
+  "table.cell.text":          "{color.slate.800}",
+  "table.cell.text-secondary":"{color.slate.500}",
+  "table.cell.font":          "{type.body.sm}",
+  "table.cell.padding.x":     "{space.inset.md}",
+  "table.cell.padding.y":     "{space.inset.sm}"
+}

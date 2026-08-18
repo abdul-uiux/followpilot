@@ -1,0 +1,16 @@
+Every raw hex maps to a primitive token
+ Every component uses only applied/component tokens
+ Semantic names are theme-agnostic
+ Neutral palette uses warm-gray family — no cool grays
+ Primary action is #191919 (monochrome), not blue
+ All 12 font sizes (10–36px) are available
+ Bold (700) weight exists for display/hero
+ Slate palette is only for data table/audit views
+ Buttons: default, hover, pressed, focus-visible, disabled, loading states
+ Text contrast: WCAG 4.5:1 body, 3:1 large/controls
+ Focus uses color.border.focus (#191919)
+ Modal backdrop: rgba(0,0,0,0.20)
+ Disabled opacity: 0.42
+ Reduced-motion honored
+ 4px spacing grid with half-steps
+ No component references primitives directly — always through semantic

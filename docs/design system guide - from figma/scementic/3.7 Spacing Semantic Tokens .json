@@ -1,0 +1,21 @@
+{
+  "space.inline.xs":  "{spacing.1}",
+  "space.inline.sm":  "{spacing.1.5}",
+  "space.inline.md":  "{spacing.2}",
+  "space.inline.lg":  "{spacing.3}",
+
+  "space.stack.xs":   "{spacing.1}",
+  "space.stack.sm":   "{spacing.2}",
+  "space.stack.md":   "{spacing.3}",
+  "space.stack.lg":   "{spacing.4}",
+  "space.stack.xl":   "{spacing.6}",
+  "space.stack.2xl":  "{spacing.8}",
+
+  "space.inset.xs":   "{spacing.1}",
+  "space.inset.sm":   "{spacing.2}",
+  "space.inset.md":   "{spacing.3}",
+  "space.inset.lg":   "{spacing.4}",
+  "space.inset.xl":   "{spacing.6}",
+  "space.inset.2xl":  "{spacing.8}",
+  "space.inset.3xl":  "{spacing.10}"
+}

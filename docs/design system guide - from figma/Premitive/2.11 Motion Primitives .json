@@ -1,0 +1,6 @@
+{
+  "motion.duration.fast": "120ms",
+  "motion.duration.normal": "200ms",
+  "motion.duration.slow": "300ms",
+  "motion.easing.default": "cubic-bezier(0.4, 0.2, 0.2, 1)"
+}

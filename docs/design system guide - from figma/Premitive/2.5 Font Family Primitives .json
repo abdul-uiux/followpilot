@@ -1,0 +1,9 @@
+{
+  "font.family.ui": "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+  "font.family.code": "SFMono-Regular5 Font Family Primitives
+
+```json
+{
+  "font.family.ui": "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+  "font.family.code": "SFMono-Regular, Consolas, 'Liberation Mono', monospace"
+}

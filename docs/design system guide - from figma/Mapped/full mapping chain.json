@@ -1,0 +1,30 @@
+5. Full Mapping Chain
+Raw Value	→ Primitive	→ Semantic	→ Applied Token(s)
+#191919	color.neutral.900	color.interactive.primary	button.primary.bg, color.text.primary
+#52504D	color.neutral.850	color.interactive.primary-hover	button.primary.bg-hover
+#FFFFFF	color.neutral.0	color.bg.surface	card.bg, input.bg, modal.bg, nav.bg
+#F7F7F5	color.neutral.150	color.bg.page	Page canvas background
+#FBFBFA	color.neutral.50	color.bg.surface-raised	nav.item.bg-hover, table.row.hover
+#E8E7E4	color.neutral.300	color.bg.surface-strong	nav.item.bg-active, badge.neutral.bg
+#787774	color.neutral.700	color.text.secondary	nav.item.text, card.meta.color
+#625F5C	color.neutral.800	color.text.tertiary	card.body.color, modal.body.color
+#9B9995	color.neutral.600	color.text.placeholder	input.placeholder, textarea.placeholder
+#DEDDDA	color.neutral.400	color.border.default	input.border, card.border, menu.border
+#ECECEA	color.neutral.200	color.border.subtle	nav.border, header.border
+#007A55	color.green.600	color.text.success	badge.success.text
+#ECFDF5	color.green.50	color.bg.success	badge.success.bg
+#A4F4CF	color.green.300	color.border.success	badge.success.border
+#A8342A	color.red.600	color.text.danger	badge.danger.text, input.error.color
+#F1F5F9	color.slate.100	—	table.header.bg
+#62748E	color.slate.500	—	table.header.text
+8px	radius.md	radius.component.md	button.radius, input.radius
+12px	radius.lg	radius.component.lg	card.radius, modal.radius
+0 20px 60px …	shadow.overlay	elevation.overlay	modal.shadow
+
+
+Rules:
+
+Weight before size for hierarchy (Medium for controls, SemiBold for headings, Bold for hero only)
+Negative tracking on headings (−0.28px at 14px → −1.44px at 36px)
+Positive tracking on overlines (+1.2px, always uppercase)
+Body line-height: ~1.45. Heading line-height: ~1.15–1.3

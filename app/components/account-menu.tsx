@@ -40,7 +40,7 @@ export function AccountMenu() {
         aria-expanded={open}
         aria-controls="account-menu"
         onClick={() => setOpen((current) => !current)}
-        className="flex items-center gap-2.5 rounded-md px-1.5 py-1 text-left transition hover:bg-[#efefed] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#e9e9e7]"
+        className="flex items-center gap-2.5 rounded-md px-1.5 py-1 text-left transition hover:bg-[#efefed] focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-[#e9e9e7]"
       >
         <div className="grid h-7 w-7 shrink-0 place-items-center overflow-hidden rounded-full bg-[#e8e7e4] bg-cover bg-center text-[10px] font-semibold text-[#191919]" style={user?.photoURL ? { backgroundImage: `url(${user.photoURL})` } : undefined}>{user?.photoURL ? <span className="sr-only">{displayName}</span> : initials}</div>
         <div className="max-w-40 min-w-0">
@@ -53,7 +53,7 @@ export function AccountMenu() {
       </button>
 
       {open && (
-        <div id="account-menu" role="menu" className="absolute right-0 top-[calc(100%+8px)] z-40 w-44 rounded-lg border border-[#e1e0dd] bg-white p-1 shadow-[0_10px_30px_rgba(25,25,25,0.12)]">
+        <div id="account-menu" role="menu" className="absolute right-0 top-[calc(100%+8px)] z-40 w-44 rounded-lg border border-[#e1e0dd] bg-white p-1 shadow-[0_1px_2px_rgba(0,0,0,0.03)]">
           <Link href="/settings" role="menuitem" onClick={() => setOpen(false)} className="flex items-center gap-2.5 rounded-md px-2.5 py-2 text-[13px] text-[#4f4d4a] transition hover:bg-[#f1f1ef] hover:text-[#191919]">
             <span aria-hidden="true" className="grid h-5 w-5 shrink-0 place-items-center"><span className="h-4 w-4 bg-current [mask-image:url('/figma-icons/settings.svg')] [mask-position:center] [mask-repeat:no-repeat] [mask-size:contain] [-webkit-mask-image:url('/figma-icons/settings.svg')] [-webkit-mask-position:center] [-webkit-mask-repeat:no-repeat] [-webkit-mask-size:contain]" /></span>
             Settings

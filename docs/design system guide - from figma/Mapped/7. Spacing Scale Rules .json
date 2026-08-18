@@ -1,0 +1,29 @@
+ 2px  0.5   Micro gap
+ 4px  1     Icon-to-label, tight gaps
+ 6px  1.5   Compact inline gap
+ 8px  2     Default inline, small padding
+10px  2.5   Medium inline gap
+12px  3     Default component padding
+14px  3.5   Comfortable component padding
+16px  4     Card padding, section gap
+20px  5     Group gap, dialog spacing
+24px  6     Major section gap
+28px  7     Large section gap
+32px  8     Page section rhythm
+36px  9     Large page spacing
+40px  10    Major page spacing
+48px  12    Hero spacing
+56px  14    Maximum content spacing
+
+Base unit: 4px.
+
+
+Rules:
+
+Related controls: 8px gap
+Related form fields: 12–16px gap
+Unrelated sections: 24–32px gap
+Page section rhythm: 40–48px
+Buttons: 32px compact, 36px standard, 44px large
+Inputs: 36px standard height
+Content max-width: 1200px; data tables use full width

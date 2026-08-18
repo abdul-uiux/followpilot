@@ -1,0 +1,10 @@
+{
+  "color.border.default":  "{color.neutral.400}",
+  "color.border.subtle":   "{color.neutral.200}",
+  "color.border.muted":    "{color.neutral.300}",
+  "color.border.strong":   "{color.neutral.700}",
+  "color.border.inverse":  "{color.neutral.900}",
+  "color.border.focus":    "{color.neutral.900}",
+  "color.border.success":  "{color.green.300}",
+  "color.border.danger":   "{color.red.600}"
+}

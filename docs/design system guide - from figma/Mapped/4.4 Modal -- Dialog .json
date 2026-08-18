@@ -1,0 +1,13 @@
+{
+  "modal.bg":                 "{color.bg.surface}",
+  "modal.radius":             "{radius.component.lg}",
+  "modal.shadow":             "{elevation.overlay}",
+  "modal.padding":            "{space.inset.xl}",
+  "modal.backdrop":           "{color.bg.overlay}",
+  "modal.title.font":         "{type.heading.sm}",
+  "modal.title.color":        "{color.text.primary}",
+  "modal.body.font":          "{type.body.md}",
+  "modal.body.color":         "{color.text.tertiary}",
+  "modal.header.border":      "{color.border.subtle}",
+  "modal.gap":                "{space.stack.lg}"
+}

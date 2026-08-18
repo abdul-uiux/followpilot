@@ -1,0 +1,13 @@
+{
+  "color.text.primary":     "{color.neutral.900}",
+  "color.text.secondary":   "{color.neutral.700}",
+  "color.text.tertiary":    "{color.neutral.800}",
+  "color.text.placeholder": "{color.neutral.600}",
+  "color.text.disabled":    "{color.neutral.600}",
+  "color.text.inverse":     "{color.neutral.0}",
+  "color.text.link":        "{color.blue.600}",
+  "color.text.success":     "{color.green.600}",
+  "color.text.danger":      "{color.red.600}",
+  "color.text.warning":     "{color.orange.600}",
+  "color.text.info":        "{color.blue.500}"
+}

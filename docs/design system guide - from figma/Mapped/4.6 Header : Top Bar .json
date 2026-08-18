@@ -1,0 +1,11 @@
+{
+  "header.bg":                "{color.bg.surface}",
+  "header.height":            "{layout.header.height}",
+  "header.border":            "{color.border.subtle}",
+  "header.padding.x":         "{space.inset.lg}",
+  "header.search.bg":         "{color.bg.surface}",
+  "header.search.border":     "{color.border.default}",
+  "header.search.radius":     "{radius.component.md}",
+  "header.search.placeholder":"{color.text.placeholder}",
+  "header.search.height":     "{layout.control.height.sm}"
+}

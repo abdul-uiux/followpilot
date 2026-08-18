@@ -1,0 +1,9 @@
+{
+  "avatar.radius":            "{radius.component.pill}",
+  "avatar.size.sm":           "28px",
+  "avatar.size.md":           "32px",
+  "avatar.size.lg":           "40px",
+  "avatar.bg":                "{color.bg.surface-strong}",
+  "avatar.text":              "{color.text.primary}",
+  "avatar.font":              "{type.label.sm}"
+}

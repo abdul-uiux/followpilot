@@ -1,0 +1,13 @@
+{
+  "color.bg.page":             "{color.neutral.150}",
+  "color.bg.surface":          "{color.neutral.0}",
+  "color.bg.surface-raised":   "{color.neutral.50}",
+  "color.bg.surface-sunken":   "{color.neutral.150}",
+  "color.bg.surface-muted":    "{color.neutral.250}",
+  "color.bg.surface-strong":   "{color.neutral.300}",
+  "color.bg.inverse":          "{color.neutral.900}",
+  "color.bg.overlay":          "rgba(0, 0, 0, 0.20)",
+  "color.bg.success":          "{color.green.50}",
+  "color.bg.danger":           "{color.red.50}",
+  "color.bg.info":             "{color.blue.50}"
+}

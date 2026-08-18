@@ -1,0 +1,12 @@
+10px  2xs   Fine print, timestamps, disclaimers
+11px  xs    Overlines, uppercase category kickers
+12px  sm    Metadata, captions, table cells, badge text, code
+13px  sm+   Button text, control labels
+14px  md    Default body text, form labels, nav items
+16px  lg    Lead paragraphs, emphasized body
+18px  xl    Card/dialog titles
+20px  2xl   Sub-section headings
+24px  3xl   Section headings
+28px  4xl   Medium headings
+30px  5xl   Page-level titles
+36px  6xl   Hero headings (Home, Meetings archive)

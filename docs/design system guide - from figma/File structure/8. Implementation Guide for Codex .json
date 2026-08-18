@@ -1,0 +1,5 @@
+tokens/
+  primitives.css           /* All primitive custom properties */
+  semantic-light.css       /* Light theme semantic mappings */
+  semantic-dark.css        /* Dark theme (future) */
+  components.css           /* Applied component token bindings */

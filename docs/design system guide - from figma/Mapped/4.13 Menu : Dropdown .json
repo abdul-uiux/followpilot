@@ -1,0 +1,15 @@
+{
+  "menu.bg":                  "{color.bg.surface}",
+  "menu.border":              "{color.border.default}",
+  "menu.radius":              "{radius.component.md}",
+  "menu.shadow":              "{elevation.mid}",
+  "menu.padding":             "{space.inset.xs}",
+  "menu.item.height":         "{layout.control.height.sm}",
+  "menu.item.padding.x":      "{space.inset.md}",
+  "menu.item.text":           "{color.text.primary}",
+  "menu.item.text-secondary": "{color.text.secondary}",
+  "menu.item.hover":          "{color.bg.surface-raised}",
+  "menu.item.font":           "{type.body.md}",
+  "menu.item.radius":         "{radius.component.sm}",
+  "menu.divider":             "{color.border.subtle}"
+}

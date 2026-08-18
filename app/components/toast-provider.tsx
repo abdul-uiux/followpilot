@@ -45,7 +45,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   return (
     <ToastContext.Provider value={{ showToast }}>
       {children}
-      {toast && <div role="status" aria-live="polite" className="pointer-events-none fixed bottom-5 right-5 z-50 max-w-[calc(100vw-2.5rem)]"><div className={`flex items-center gap-2 rounded-lg border px-3.5 py-3 text-[13px] font-medium shadow-[0_10px_30px_rgba(0,0,0,0.12)] transition-all duration-200 ease-out ${visible ? "translate-y-0 opacity-100" : "translate-y-2 opacity-0"} ${toast.tone === "error" ? "border-[#f1c8c3] bg-[#fffafa] text-[#a8342a]" : "border-[#deddda] bg-[#191919] text-white"}`}><span className={`grid h-4 w-4 place-items-center rounded-full text-[10px] ${toast.tone === "error" ? "bg-[#fde5e2]" : "bg-white/15"}`}>{toast.tone === "error" ? "!" : "✓"}</span>{toast.message}</div></div>}
+      {toast && <div role="status" aria-live="polite" className="pointer-events-none fixed bottom-5 right-5 z-50 max-w-[calc(100vw-2.5rem)]"><div className={`flex items-center gap-2 rounded-lg border px-3.5 py-3 text-[13px] font-medium shadow-[0_1px_2px_rgba(0,0,0,0.03)] transition-all duration-200 ease-out ${visible ? "translate-y-0 opacity-100" : "translate-y-2 opacity-0"} ${toast.tone === "error" ? "border-[#f1c8c3] bg-[#fffafa] text-[#a8342a]" : "border-[#deddda] bg-[#191919] text-white"}`}><span className={`grid h-4 w-4 place-items-center rounded-full text-[10px] ${toast.tone === "error" ? "bg-[#fde5e2]" : "bg-white/15"}`}>{toast.tone === "error" ? "!" : "✓"}</span>{toast.message}</div></div>}
     </ToastContext.Provider>
   );
 }

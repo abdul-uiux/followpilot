@@ -1,0 +1,12 @@
+{
+  "color.interactive.primary":          "{color.neutral.900}",
+  "color.interactive.primary-hover":    "{color.neutral.850}",
+  "color.interactive.secondary":        "{color.neutral.0}",
+  "color.interactive.secondary-hover":  "{color.neutral.50}",
+  "color.interactive.tertiary":         "{color.neutral.300}",
+  "color.interactive.tertiary-hover":   "{color.neutral.400}",
+  "color.interactive.danger":           "{color.red.600}",
+  "color.interactive.danger-hover":     "#8F2C23"
+}
+
+FollowPilot's primary action is monochrome black (#191919), not blue.

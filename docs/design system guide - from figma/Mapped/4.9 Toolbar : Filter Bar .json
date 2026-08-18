@@ -1,0 +1,8 @@
+{
+  "toolbar.height":           "40px",
+  "toolbar.gap":              "{space.inline.md}",
+  "toolbar.border":           "{color.border.subtle}",
+  "toolbar.control.height":   "{layout.control.height.sm}",
+  "toolbar.control.radius":   "{radius.component.md}",
+  "toolbar.control.font":     "{type.label.md}"
+}
