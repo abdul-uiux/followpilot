@@ -53,7 +53,7 @@ export function AccountMenu() {
       </button>
 
       {open && (
-        <div id="account-menu" role="menu" className="absolute right-0 top-[calc(100%+8px)] z-40 w-44 rounded-lg border border-[#e1e0dd] bg-white p-1 shadow-[0_1px_2px_rgba(0,0,0,0.03)]">
+        <div id="account-menu" role="menu" className="fp-surface-elevation fp-control-radius absolute right-0 top-[calc(100%+8px)] z-40 w-44 border border-[#e1e0dd] bg-white p-1">
           <Link href="/settings" role="menuitem" onClick={() => setOpen(false)} className="flex items-center gap-2.5 rounded-md px-2.5 py-2 text-[13px] text-[#4f4d4a] transition hover:bg-[#f1f1ef] hover:text-[#191919]">
             <span aria-hidden="true" className="grid h-5 w-5 shrink-0 place-items-center"><span className="h-4 w-4 bg-current [mask-image:url('/figma-icons/settings.svg')] [mask-position:center] [mask-repeat:no-repeat] [mask-size:contain] [-webkit-mask-image:url('/figma-icons/settings.svg')] [-webkit-mask-position:center] [-webkit-mask-repeat:no-repeat] [-webkit-mask-size:contain]" /></span>
             Settings

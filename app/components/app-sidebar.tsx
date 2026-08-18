@@ -17,7 +17,7 @@ const navItems = [
 export function AppSidebar({ activePage }: AppSidebarProps) {
 
   return (
-    <aside className="fixed inset-y-0 left-0 z-20 hidden w-60 border-r border-[#e8e7e4] bg-[#fbfbfa] px-3 py-4 lg:flex lg:flex-col">
+    <aside className="fp-nav fixed inset-y-0 left-0 z-20 hidden w-60 border-r border-[#e8e7e4] bg-[#fbfbfa] px-3 py-4 lg:flex lg:flex-col">
       <Link href="/" className="flex items-center gap-2.5 px-2">
         <div className="grid h-7 w-7 place-items-center rounded-md bg-[#191919] text-xs font-bold text-white">F</div>
         <span className="text-sm font-semibold tracking-[-0.02em]">FollowPilot</span>

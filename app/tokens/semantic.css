@@ -1,0 +1,39 @@
+:root {
+  /* Backgrounds */
+  --fp-color-bg-page: var(--fp-color-neutral-100);
+  --fp-color-bg-surface: var(--fp-color-neutral-0);
+  --fp-color-bg-surface-raised: var(--fp-color-neutral-50);
+  --fp-color-bg-surface-quiet: var(--fp-color-neutral-75);
+  --fp-color-bg-surface-alt: var(--fp-color-neutral-110);
+  --fp-color-bg-surface-selected: var(--fp-color-neutral-250);
+  --fp-color-bg-surface-strong: var(--fp-color-neutral-300);
+  --fp-color-bg-overlay: rgba(25, 25, 25, var(--fp-opacity-overlay));
+
+  /* Text and borders */
+  --fp-color-text-primary: var(--fp-color-neutral-900);
+  --fp-color-text-secondary: var(--fp-color-neutral-700);
+  --fp-color-text-tertiary: var(--fp-color-neutral-800);
+  --fp-color-text-control: var(--fp-color-neutral-820);
+  --fp-color-text-placeholder: var(--fp-color-neutral-600);
+  --fp-color-text-inverse: var(--fp-color-neutral-0);
+  --fp-color-border-default: var(--fp-color-neutral-400);
+  --fp-color-border-subtle: var(--fp-color-neutral-200);
+  --fp-color-border-strong: var(--fp-color-neutral-500);
+  --fp-color-border-focus: var(--fp-color-neutral-900);
+  --fp-focus-ring-color: var(--fp-color-neutral-250);
+
+  /* Interaction */
+  --fp-color-interactive-primary: var(--fp-color-neutral-900);
+  --fp-color-interactive-primary-hover: var(--fp-color-neutral-850);
+  --fp-color-interactive-secondary: var(--fp-color-neutral-0);
+  --fp-color-interactive-secondary-hover: var(--fp-color-neutral-130);
+  --fp-color-interactive-danger: var(--fp-color-red-600);
+  --fp-color-interactive-danger-hover: var(--fp-color-red-700);
+
+  /* Product feedback */
+  --fp-color-status-success-bg: var(--fp-color-green-50);
+  --fp-color-status-success-text: var(--fp-color-green-700);
+  --fp-color-status-danger-bg: var(--fp-color-red-50);
+  --fp-color-status-danger-text: var(--fp-color-red-600);
+  --fp-color-status-warning-text: var(--fp-color-orange-600);
+}

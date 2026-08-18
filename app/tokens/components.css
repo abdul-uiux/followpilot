@@ -1,0 +1,46 @@
+/* Applied/component tokens. Components should consume these roles rather than
+   inventing a new raw value for each page. */
+:root {
+  --fp-button-radius: var(--fp-radius-sm);
+  --fp-button-height-sm: var(--fp-layout-control-height-sm);
+  --fp-button-height-md: var(--fp-layout-control-height-md);
+  --fp-button-height-lg: var(--fp-layout-control-height-lg);
+  --fp-button-focus-ring: 3px;
+  --fp-input-radius: var(--fp-radius-sm);
+  --fp-input-height: var(--fp-layout-control-height-md);
+  --fp-input-focus-ring: 3px;
+  --fp-card-radius: var(--fp-radius-lg);
+  --fp-card-elevation: var(--fp-elevation-surface);
+  --fp-menu-radius: var(--fp-radius-sm);
+  --fp-menu-elevation: var(--fp-elevation-surface);
+  --fp-modal-radius: var(--fp-radius-lg);
+  --fp-modal-elevation: var(--fp-elevation-surface);
+  --fp-nav-width: var(--fp-layout-sidebar-expanded);
+  --fp-nav-icon-size: 20px;
+  --fp-header-height: var(--fp-layout-header-height);
+}
+
+.fp-surface-elevation {
+  box-shadow: var(--fp-elevation-surface);
+}
+
+.fp-nav {
+  width: var(--fp-nav-width);
+}
+
+.fp-header {
+  height: var(--fp-header-height);
+}
+
+.fp-control-radius {
+  border-radius: var(--fp-radius-sm);
+}
+
+.fp-focus-ring:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 var(--fp-button-focus-ring) var(--fp-focus-ring-color);
+}
+
+.fp-disabled:disabled {
+  opacity: var(--fp-opacity-disabled);
+}
